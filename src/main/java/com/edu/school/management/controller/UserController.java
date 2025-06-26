@@ -1,6 +1,7 @@
 package com.edu.school.management.controller;
 
 import com.edu.school.management.entity.UserEntity;
+import com.edu.school.management.exceptions.InvalidCredentialsException;
 import com.edu.school.management.service.UserService;
 
 import jakarta.validation.Valid;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.*; // ✅ Required for annotation
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -28,10 +29,10 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserEntity> getUserByUsernameAndPassword(@RequestBody UserEntity user) {
+    public ResponseEntity<UserEntity> loginUser(@RequestBody UserEntity user) {
         return userService.getUserByUsernameAndPassword(user.getUsername(), user.getPassword())
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
     }
 
     @PutMapping("/{id}")
