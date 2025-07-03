@@ -2,6 +2,7 @@ package com.edu.school.management.controller;
 
 import com.edu.school.management.entity.UserEntity;
 import com.edu.school.management.exceptions.InvalidCredentialsException;
+import com.edu.school.management.response.ApiResponse;
 import com.edu.school.management.service.UserService;
 
 import jakarta.validation.Valid;
@@ -23,17 +24,25 @@ public class UserController {
         return ResponseEntity.ok(userService.createUser(user));
     }
 
-    @GetMapping
+    @GetMapping("/getAllUsers")
     public ResponseEntity<List<UserEntity>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserEntity> loginUser(@RequestBody UserEntity user) {
+    public ResponseEntity<ApiResponse<UserEntity>> loginUser(@RequestBody UserEntity user) {
         return userService.getUserByUsernameAndPassword(user.getUsername(), user.getPassword())
-                .map(ResponseEntity::ok)
-                .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
+            .map(foundUser -> ResponseEntity.ok(
+                ApiResponse.<UserEntity>builder()
+                    .status(200)
+                    .message("Login successful")
+                    .data(foundUser)
+                    .build()
+            ))
+            .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
     }
+
+
 
     @PutMapping("/{id}")
     public ResponseEntity<UserEntity> updateUser(@PathVariable Long id, @RequestBody UserEntity user) {

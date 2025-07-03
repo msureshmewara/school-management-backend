@@ -3,21 +3,19 @@ package com.edu.school.management.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
-@Table(name = "students") // ✅ keep as is
+@Table(name = "students")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class StudentEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "student_pin")
@@ -25,98 +23,67 @@ public class StudentEntity {
 
     @Column(nullable = false, unique = true)
     private String username;
+    @Column(nullable = false) private String password;
+    @Column(nullable = false) private String gender;
+    @Column(nullable = false) private String rollNumber;
+    @Column(nullable = false) private String scholarNumber;
 
-    @NotBlank(message = "Password is required")
-    @Column(nullable = false)
-    private String password;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id", nullable = false)
+    private SchoolClassEntity schoolClass;
 
-    @NotBlank(message = "Role is required")
-    @Column(nullable = false)
-    private String role;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id", nullable = false)
+    private RoleEntity role;
 
-    @NotBlank(message = "Gender is required")
-    @Column(nullable = false)
-    private String gender;
-    
-    @NotBlank(message = "Roll Number is required")
-    @Column(nullable = false)
-    private String rollNumber;
-    
-    @NotBlank(message = "Scholar Number is required")
-    @Column(nullable = false)
-    private String scholarNumber;
-    
-    @NotBlank(message = "Class Number is required")
-    @Column(nullable = false)
-    private String stu_class;
-    
-    @NotBlank(message = "Section Number is required")
-    @Column(nullable = false)
-    private String section;
-    
-    @NotBlank(message = "First name is required")
-    @Column(nullable = false)
-    private String firstName;
-
-    @NotBlank(message = "Last name is required")
-    @Column(nullable = false)
-    private String lastName;
-
-    @NotBlank(message = "Contact number is required")
-    @Column(nullable = false)
-    private String contactNumber;
-
-    @NotNull(message = "Date of Birth is required")
+    @Column(nullable = false) private String firstName;
+    @Column(nullable = false) private String lastName;
+    @Column(nullable = false) private String contactNumber;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private LocalDate dOB;
-
-    @NotBlank(message = "Address is required")
-    @Column(nullable = false)
-    private String address;
-
-    @NotBlank(message = "City is required")
-    @Column(nullable = false)
-    private String city;
-
-    @NotBlank(message = "State is required")
-    @Column(nullable = false)
-    private String state;
-
-    @NotBlank(message = "PIN Code is required")
-    @Column(nullable = false)
-    private String pin;
-
-    @NotBlank(message = "Country is required")
-    @Column(nullable = false)
-    private String country;
-
-    @NotBlank(message = "Status is required")
-    @Column(nullable = false)
-    private String status;
-    
-    @NotBlank(message = "Created By is required")
-    @Column(nullable = false)
-    private String createdBy;
-    
+    @Column(nullable = false) private LocalDate dOB;
+    @Column(nullable = false) private String address;
+    @Column(nullable = false) private String caste;
+    @Column(nullable = false) private String religion;
+    @Column(nullable = false) private String nationality;
+    @Column(nullable = false) private String motherToungue;
+    private String isDisable, sssmidNum, aadharCardNum, rationCardNum,
+                   admissionFormNumber, disabilityType, currentEduBoard, feesDiscount;
+    @Column(nullable = false) private String medicalHistory;
+    @Column(nullable = false) private String apaarId;
+    @Column(nullable = false) private String prevSchool;
+    @Column(nullable = false) private String prevEduBoard;
+    @Column(nullable = false) private String registrationNumber;
+    @Column(nullable = false) private String enrollmentNumber;
+    @Column(nullable = false) private String bloodGroup;
+    @Column(nullable = false) private String city;
+    @Column(nullable = false) private String state;
+    @Column(nullable = false) private String pinCode;
+    @Column(nullable = false) private String country;
+    @Column(nullable = false) private String status;
+    @Column(nullable = false) private String createdBy;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @PrePersist
-    protected void onCreate() {
+    @PrePersist protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
     }
-
-    @PreUpdate
-    protected void onUpdate() {
+    @PreUpdate protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
 
-    // ✅ Optional Bidirectional Mapping
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StudentFeesEntity> fees;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StudentFamilyEntity> family;
+
+    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private StudentDocEntity documents;
+
+    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private StudentPhotoEntity photos;
 }

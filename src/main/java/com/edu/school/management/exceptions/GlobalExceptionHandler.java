@@ -1,100 +1,89 @@
 package com.edu.school.management.exceptions;
 
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
+import jakarta.validation.ConstraintViolationException;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.hibernate.TransientPropertyValueException;
+import org.hibernate.TransientPropertyValueException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
+
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Validation annotations like @NotBlank
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
-        Map<String, String> fieldErrors = new HashMap<>();
-
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-            fieldErrors.put(error.getField(), error.getDefaultMessage())
-        );
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("message", "Validation failed");
-        body.put("errors", fieldErrors);
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Map<String,Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
+        Map<String,String> fieldErrors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors()
+          .forEach(error -> fieldErrors.put(error.getField(), error.getDefaultMessage()));
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                    "status", HttpStatus.BAD_REQUEST.value(),
+                    "message", "Validation failed",
+                    "errors", fieldErrors
+                ));
     }
 
-    // Unique constraint / null DB constraint violations
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        Map<String, String> fieldErrors = new HashMap<>();
-        String rootCause = ex.getRootCause() != null ? ex.getRootCause().getMessage() : "";
-
-        if ((rootCause != null && !rootCause.isEmpty())
-                || (rootCause.contains("username") && rootCause.toLowerCase().contains("duplicate"))) {
-            fieldErrors.put("username", "Username must be unique");
-        } else if (rootCause != null && !rootCause.isEmpty()
-                && rootCause.contains("password") && rootCause.toLowerCase().contains("null")) {
-            fieldErrors.put("password", "Password cannot be null");
-        } else if (rootCause != null && !rootCause.isEmpty()
-                && rootCause.contains("role") && rootCause.toLowerCase().contains("null")) {
-            fieldErrors.put("role", "Role cannot be null");
-        } else if (rootCause != null && !rootCause.isEmpty()
-                && rootCause.contains("gender") && rootCause.toLowerCase().contains("null")) {
-            fieldErrors.put("gender", "Gender cannot be null");
-        } else if (rootCause != null && !rootCause.isEmpty()
-                && rootCause.contains("firstName") && rootCause.toLowerCase().contains("null")) {
-            fieldErrors.put("firstName", "FirstName cannot be null");
-        } else if (rootCause != null && !rootCause.isEmpty()
-                && rootCause.contains("lastName") && rootCause.toLowerCase().contains("null")) {
-            fieldErrors.put("lastName", "LastName cannot be null");
-        } else if (rootCause != null && !rootCause.isEmpty()
-                && rootCause.contains("contactNumber") && rootCause.toLowerCase().contains("null")) {
-            fieldErrors.put("contactNumber", "Contact Number cannot be null");
-        } else if (rootCause != null && !rootCause.isEmpty()
-                && rootCause.contains("dOB") && rootCause.toLowerCase().contains("null")) {
-            fieldErrors.put("dOB", "Date of birth cannot be null");
-        } else if (rootCause != null && !rootCause.isEmpty()
-                && rootCause.contains("address") && rootCause.toLowerCase().contains("null")) {
-            fieldErrors.put("address", "Address cannot be null");
-        } else if (rootCause != null && !rootCause.isEmpty()
-                && rootCause.contains("city") && rootCause.toLowerCase().contains("null")) {
-            fieldErrors.put("city", "City cannot be null");
-        } else if (rootCause != null && !rootCause.isEmpty()
-                && rootCause.contains("state") && rootCause.toLowerCase().contains("null")) {
-            fieldErrors.put("state", "State cannot be null");
-        }  else if (rootCause != null && !rootCause.isEmpty()
-                && rootCause.contains("pin") && rootCause.toLowerCase().contains("null")) {
-            fieldErrors.put("pin", "Pin Code cannot be null");
-        }  else if (rootCause != null && !rootCause.isEmpty()
-                && rootCause.contains("country") && rootCause.toLowerCase().contains("null")) {
-            fieldErrors.put("country", "Country cannot be null");
-        }  else if (rootCause != null && !rootCause.isEmpty()
-                && rootCause.contains("status") && rootCause.toLowerCase().contains("null")) {
-            fieldErrors.put("status", "Status cannot be null");
-        }  else {
-            fieldErrors.put("error", "Data integrity violation: " + rootCause);
+    public ResponseEntity<Map<String,Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        Map<String,String> fieldErrors = new HashMap<>();
+        String msg = ex.getRootCause() != null ? ex.getRootCause().getMessage().toLowerCase() : "";
+        if (msg.contains("duplicate") && msg.contains("username")) {
+            fieldErrors.put("username","Username must be unique");
+        } else if (msg.contains("null")) {
+            if (msg.contains("role")) fieldErrors.put("role","Role cannot be null");
+            // more null checks as needed...
+            else fieldErrors.put("unknown_field","Missing required field");
+        } else {
+            fieldErrors.put("error","Data integrity violation: "+msg);
         }
-      
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("message", "Data integrity violation");
-        body.put("errors", fieldErrors);
-
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                    "status", HttpStatus.BAD_REQUEST.value(),
+                    "message", "Data integrity violation",
+                    "errors", fieldErrors
+                ));
     }
-    
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidCredentials(InvalidCredentialsException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", HttpStatus.UNAUTHORIZED.value());
-        body.put("message", "Invalid credentials");
-        body.put("error", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
+
+    @ExceptionHandler(TransientPropertyValueException.class)
+    public ResponseEntity<Map<String,Object>> handleTransientValue(TransientPropertyValueException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                    "status", HttpStatus.BAD_REQUEST.value(),
+                    "message", "Entity reference error",
+                    "error", ex.getMessage()
+                ));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String,Object>> handleGenericException(Exception ex) {
+        // Optional: detect nested TransientPropertyValueException
+        if (ExceptionUtils.hasCause(ex, TransientPropertyValueException.class)) {
+            Throwable cause = ExceptionUtils.getRootCause(ex);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                        "status", HttpStatus.BAD_REQUEST.value(),
+                        "message", "Entity reference error",
+                        "error", cause.getMessage()
+                    ));
+        }
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "message", "An unexpected error occurred",
+                    "error", ex.getMessage()
+                ));
     }
 }

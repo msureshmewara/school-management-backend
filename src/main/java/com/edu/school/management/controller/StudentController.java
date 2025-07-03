@@ -1,6 +1,7 @@
 package com.edu.school.management.controller;
 
 import com.edu.school.management.dto.StudentFeeResponse;
+import com.edu.school.management.dto.StudentFullResponseDTO;
 import com.edu.school.management.entity.StudentEntity;
 import com.edu.school.management.exceptions.InvalidCredentialsException;
 import com.edu.school.management.service.StudentService;
@@ -23,9 +24,9 @@ public class StudentController {
         return ResponseEntity.ok(studentService.createUser(user));
     }
 
-    @GetMapping
-    public ResponseEntity<List<StudentEntity>> getAllUsers() {
-        return ResponseEntity.ok(studentService.getAllUsers());
+    @GetMapping("/getAllStudents")
+    public ResponseEntity<List<StudentEntity>> getAllStudents() {
+        return ResponseEntity.ok(studentService.getAllStudents());
     }
 
     @PostMapping("/login")
@@ -51,10 +52,15 @@ public class StudentController {
     @GetMapping("/fees")
     public ResponseEntity<StudentFeeResponse> getStudentFees(
             @RequestParam String rollNumber,
-            @RequestParam String stuClass,
+            @RequestParam String className,  // change name for clarity
             @RequestParam String section) {
-
-        StudentFeeResponse response = studentService.getStudentWithFees(rollNumber, stuClass, section);
+        StudentFeeResponse response = studentService.getStudentWithFees(rollNumber, className, section);
         return ResponseEntity.ok(response);
     }
+    
+    @GetMapping("/studentDetails/{id}")
+    public ResponseEntity<StudentFullResponseDTO> getFullStudent(@PathVariable Long id) {
+        return ResponseEntity.ok(studentService.getFullStudentDetails(id));
+    }
+
 }

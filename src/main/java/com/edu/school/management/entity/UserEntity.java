@@ -3,13 +3,17 @@ package com.edu.school.management.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -39,9 +43,10 @@ public class UserEntity {
     @Column(nullable = false)
     private String password;
     
-    @NotBlank(message = "Role is required")
-    @Column(nullable = false)
-    private String role; // ADMIN, STUDENT, TEACHER
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id", nullable = false)
+    @JsonBackReference
+    private RoleEntity role;
     
     @NotBlank(message = "Gender is required")
     @Column(nullable = false)
@@ -77,7 +82,7 @@ public class UserEntity {
     
     @NotBlank(message = "PIN Code is required")
     @Column(nullable = false)
-    private String pin;
+    private String pinCode;
     
     @NotBlank(message = "Country is required")
     @Column(nullable = false)

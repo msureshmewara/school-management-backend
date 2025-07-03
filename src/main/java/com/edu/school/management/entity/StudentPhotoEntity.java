@@ -1,38 +1,39 @@
 package com.edu.school.management.entity;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Entity
-@Table(name = "student_fees") // ✅ DIFFERENT TABLE NAME
+@Table(name = "student_photos")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StudentFeesEntity {
+public class StudentPhotoEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long feesId;
-
-    @ManyToOne
-    @JoinColumn(name = "student_pin", nullable = false)
+    private Long stu_photo_id;
+    @OneToOne
+    @JoinColumn(name = "student_pin", referencedColumnName = "student_pin")
     @JsonBackReference
     private StudentEntity student;
 
     
-    private Double totalFees;
-    private LocalDate paymentDate;
-    private String paymentMode;
-    private String paymentRefNum;
-    private String receivedBy;
-    private String paidAmount;
-    private String status;
+    private String studentPhoto;
+    private String fatherPhoto;
+    private String motherPhoto;
+    private String guardianPhoto;
+
+    @NotBlank(message = "Created By is required")
+    @Column(nullable = false)
+    private String createdBy;
+    
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -50,6 +51,5 @@ public class StudentFeesEntity {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-    
+   
 }
