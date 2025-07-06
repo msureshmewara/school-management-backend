@@ -1,12 +1,13 @@
 package com.edu.school.management.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.*;
-import lombok.*;
 
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
@@ -16,17 +17,18 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class StudentEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "student_pin")
     private Long studentPin;
 
-    @Column(nullable = false, unique = true)
-    private String username;
+    @Column(nullable = false, unique = true) private String username;
     @Column(nullable = false) private String password;
     @Column(nullable = false) private String gender;
-    @Column(nullable = false) private String rollNumber;
+    @Column(nullable = false) private Integer rollNumber;
     @Column(nullable = false) private String scholarNumber;
+    @Column(nullable = false) private String className;  // This must exist
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", nullable = false)
@@ -39,15 +41,15 @@ public class StudentEntity {
     @Column(nullable = false) private String firstName;
     @Column(nullable = false) private String lastName;
     @Column(nullable = false) private String contactNumber;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     @Column(nullable = false) private LocalDate dOB;
+
     @Column(nullable = false) private String address;
     @Column(nullable = false) private String caste;
     @Column(nullable = false) private String religion;
     @Column(nullable = false) private String nationality;
     @Column(nullable = false) private String motherToungue;
-    private String isDisable, sssmidNum, aadharCardNum, rationCardNum,
-                   admissionFormNumber, disabilityType, currentEduBoard, feesDiscount;
     @Column(nullable = false) private String medicalHistory;
     @Column(nullable = false) private String apaarId;
     @Column(nullable = false) private String prevSchool;
@@ -60,6 +62,8 @@ public class StudentEntity {
     @Column(nullable = false) private String pinCode;
     @Column(nullable = false) private String country;
     @Column(nullable = false) private String status;
+    @Column(nullable = false) private Double totalFees;
+    @Column(nullable = false) private Double feesDiscount;
     @Column(nullable = false) private String createdBy;
 
     @Column(name = "created_at", updatable = false)
@@ -67,10 +71,14 @@ public class StudentEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    private String isDisable, sssmidNum, aadharCardNum, rationCardNum,
+                   admissionFormNumber, disabilityType, currentEduBoard;
+
     @PrePersist protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
     }
+
     @PreUpdate protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
@@ -81,9 +89,13 @@ public class StudentEntity {
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StudentFamilyEntity> family;
 
-    @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
-    private StudentDocEntity documents;
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StudentDocEntity> documents;
+
 
     @OneToOne(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     private StudentPhotoEntity photos;
+    
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StudentSiblingEntity> siblings;
 }

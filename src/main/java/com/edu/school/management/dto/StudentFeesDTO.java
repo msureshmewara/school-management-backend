@@ -10,6 +10,6 @@ public class StudentFeesDTO {
     private Double totalFees;
     private LocalDate paymentDate;
     private String paymentMode;
-    private String paidAmount;
+    private Double paidAmount;
     private String status;
 }

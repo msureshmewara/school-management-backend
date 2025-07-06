@@ -31,7 +31,7 @@ public class StudentFeesEntity {
     private String paymentMode;
     private String paymentRefNum;
     private String receivedBy;
-    private String paidAmount;
+    private Double paidAmount;
     private String status;
 
     @Column(name = "created_at", updatable = false)

@@ -1,11 +1,16 @@
 package com.edu.school.management.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class StudentDocDTO {
-    private String aadharCard;
-    private String panCard;
-    private String casteCertificate;
-    private String admissionForm;
+    private Long stuDocId;
+    private String docType;
+    private String fileName;
+    private String filePath;
+    private String contentType;
 }

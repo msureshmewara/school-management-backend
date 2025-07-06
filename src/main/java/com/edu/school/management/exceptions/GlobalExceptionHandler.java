@@ -1,12 +1,6 @@
 package com.edu.school.management.exceptions;
 
 import jakarta.validation.ConstraintViolationException;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.hibernate.TransientPropertyValueException;
 import org.hibernate.TransientPropertyValueException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -14,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -34,17 +30,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String,Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        Map<String,String> fieldErrors = new HashMap<>();
-        String msg = ex.getRootCause() != null ? ex.getRootCause().getMessage().toLowerCase() : "";
-        if (msg.contains("duplicate") && msg.contains("username")) {
-            fieldErrors.put("username","Username must be unique");
-        } else if (msg.contains("null")) {
-            if (msg.contains("role")) fieldErrors.put("role","Role cannot be null");
-            // more null checks as needed...
-            else fieldErrors.put("unknown_field","Missing required field");
+        Map<String, String> fieldErrors = new HashMap<>();
+        String msg = ex.getRootCause() != null ? ex.getRootCause().getMessage() : ex.getMessage();
+
+        if (msg != null && msg.toLowerCase().contains("null value")) {
+            String[] parts = msg.split("column '");
+            if (parts.length > 1) {
+                String field = parts[1].split("'")[0];
+                fieldErrors.put(field, field + " is required (missing)");
+            } else {
+                fieldErrors.put("unknown_field", "A required field is missing");
+            }
+        } else if (msg != null && msg.toLowerCase().contains("duplicate")) {
+            fieldErrors.put("unique_constraint", "Duplicate value violates unique constraint");
         } else {
-            fieldErrors.put("error","Data integrity violation: "+msg);
+            fieldErrors.put("error", "Data integrity issue: " + msg);
         }
+
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Map.of(
@@ -67,22 +69,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String,Object>> handleGenericException(Exception ex) {
-        // Optional: detect nested TransientPropertyValueException
-        if (ExceptionUtils.hasCause(ex, TransientPropertyValueException.class)) {
-            Throwable cause = ExceptionUtils.getRootCause(ex);
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of(
-                        "status", HttpStatus.BAD_REQUEST.value(),
-                        "message", "Entity reference error",
-                        "error", cause.getMessage()
-                    ));
-        }
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of(
                     "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "message", "An unexpected error occurred",
+                    "message", "Unexpected error occurred",
                     "error", ex.getMessage()
                 ));
     }
