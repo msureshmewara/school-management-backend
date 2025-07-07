@@ -67,14 +67,100 @@ public class StudentService {
     }
 
     // ✅ Update basic student info
-    public Optional<StudentEntity> updateUser(Long id, StudentEntity updatedUser) {
-        return studentRepository.findById(id).map(user -> {
-            user.setUsername(updatedUser.getUsername());
-            user.setPassword(updatedUser.getPassword());
-            user.setRole(updatedUser.getRole());
-            return studentRepository.save(user);
+    public Optional<StudentEntity> updateStudent(Long id, StudentEntity updatedUser) {
+        RoleEntity role = roleRepo.findById(updatedUser.getRole().getRoleId())
+                .orElseThrow(() -> new EntityNotFoundException("Role not found"));
+        SchoolClassEntity clazz = classRepo.findById(updatedUser.getSchoolClass().getClassId())
+                .orElseThrow(() -> new EntityNotFoundException("Class not found"));
+
+        return studentRepository.findById(id).map(existing -> {
+            existing.setUsername(updatedUser.getUsername());
+            existing.setPassword(updatedUser.getPassword());
+            existing.setGender(updatedUser.getGender());
+            existing.setRollNumber(updatedUser.getRollNumber());
+            existing.setScholarNumber(updatedUser.getScholarNumber());
+            existing.setClassName(updatedUser.getClassName());
+            existing.setSchoolClass(clazz);
+            existing.setRole(role);
+            existing.setFirstName(updatedUser.getFirstName());
+            existing.setLastName(updatedUser.getLastName());
+            existing.setContactNumber(updatedUser.getContactNumber());
+            existing.setDOB(updatedUser.getDOB());
+            existing.setAddress(updatedUser.getAddress());
+            existing.setCaste(updatedUser.getCaste());
+            existing.setReligion(updatedUser.getReligion());
+            existing.setNationality(updatedUser.getNationality());
+            existing.setMotherToungue(updatedUser.getMotherToungue());
+            existing.setMedicalHistory(updatedUser.getMedicalHistory());
+            existing.setApaarId(updatedUser.getApaarId());
+            existing.setPrevSchool(updatedUser.getPrevSchool());
+            existing.setPrevEduBoard(updatedUser.getPrevEduBoard());
+            existing.setRegistrationNumber(updatedUser.getRegistrationNumber());
+            existing.setEnrollmentNumber(updatedUser.getEnrollmentNumber());
+            existing.setBloodGroup(updatedUser.getBloodGroup());
+            existing.setCity(updatedUser.getCity());
+            existing.setState(updatedUser.getState());
+            existing.setPinCode(updatedUser.getPinCode());
+            existing.setCountry(updatedUser.getCountry());
+            existing.setStatus(updatedUser.getStatus());
+            existing.setTotalFees(updatedUser.getTotalFees());
+            existing.setFeesDiscount(updatedUser.getFeesDiscount());
+            existing.setCreatedBy(updatedUser.getCreatedBy());
+            existing.setIsDisable(updatedUser.getIsDisable());
+            existing.setSssmidNum(updatedUser.getSssmidNum());
+            existing.setAadharCardNum(updatedUser.getAadharCardNum());
+            existing.setRationCardNum(updatedUser.getRationCardNum());
+            existing.setAdmissionFormNumber(updatedUser.getAdmissionFormNumber());
+            existing.setDisabilityType(updatedUser.getDisabilityType());
+            existing.setCurrentEduBoard(updatedUser.getCurrentEduBoard());
+
+            // --- ✅ Update fees ---
+//            if (updatedUser.getFees() != null) {
+//                existing.getFees().clear();
+//                updatedUser.getFees().forEach(fee -> {
+//                    fee.setStudent(existing);
+//                    existing.getFees().add(fee);
+//                });
+//            }
+
+            // --- ✅ Update family ---
+            if (updatedUser.getFamily() != null) {
+                existing.getFamily().clear();
+                updatedUser.getFamily().forEach(fam -> {
+                    fam.setStudent(existing);
+                    existing.getFamily().add(fam);
+                });
+            }
+
+            // --- ✅ Update documents ---
+//            if (updatedUser.getDocuments() != null) {
+//                existing.getDocuments().clear();
+//                updatedUser.getDocuments().forEach(doc -> {
+//                    doc.setStudent(existing);
+//                    existing.getDocuments().add(doc);
+//                });
+//            }
+
+            // --- ✅ Update photo ---
+//            if (updatedUser.getPhotos() != null) {
+//                updatedUser.getPhotos().setStudent(existing);
+//                existing.setPhotos(updatedUser.getPhotos());
+//            }
+
+            // --- ✅ Update siblings ---
+            if (updatedUser.getSiblings() != null) {
+                existing.getSiblings().clear();
+                updatedUser.getSiblings().forEach(sib -> {
+                    sib.setStudent(existing);
+                    existing.getSiblings().add(sib);
+                });
+            }
+
+            return studentRepository.save(existing);
         });
     }
+
+
 
     // ✅ Delete student
     public void deleteUser(Long id) {
@@ -171,12 +257,14 @@ public class StudentService {
         // Role
         if (student.getRole() != null) {
             dto.setRoleTitle(student.getRole().getTitle());
+            dto.setRoleId(student.getRole().getRoleId());
         }
 
         // Class
         if (student.getSchoolClass() != null) {
             dto.setClassName(student.getSchoolClass().getClassName());
             dto.setSection(student.getSchoolClass().getSection());
+            dto.setClassId(student.getSchoolClass().getClassId());
         }
 
         // Family

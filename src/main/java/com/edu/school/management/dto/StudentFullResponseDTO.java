@@ -5,6 +5,8 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import jakarta.persistence.Column;
 
 @Data
@@ -16,6 +18,7 @@ public class StudentFullResponseDTO {
     private String lastName;
     private String gender;
     private String contactNumber;
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate dOB;
     private String address;
     private String city;
@@ -40,6 +43,8 @@ public class StudentFullResponseDTO {
     private String registrationNumber;
     private String enrollmentNumber;
     private String bloodGroup;
+    private Long classId;
+    private Long roleId;
 
     private String roleTitle;
 

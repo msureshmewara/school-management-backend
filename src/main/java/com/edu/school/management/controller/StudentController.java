@@ -40,9 +40,9 @@ public class StudentController {
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<StudentEntity> updateUser(@PathVariable Long id, @RequestBody StudentEntity user) {
-        return studentService.updateUser(id, user)
+    @PutMapping("/updateStudent/{id}")
+    public ResponseEntity<StudentEntity> updateStudent(@PathVariable Long id, @RequestBody StudentEntity user) {
+        return studentService.updateStudent(id, user)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
