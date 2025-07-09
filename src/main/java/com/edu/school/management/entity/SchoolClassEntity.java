@@ -30,8 +30,13 @@ public class SchoolClassEntity {
     @Column(nullable = false)
     private String section;
 
+    @OneToMany(mappedBy = "schoolClass", cascade = CascadeType.ALL)
+    @JsonIgnore // hide the back-reference to students
+    private List<StudentEntity> students = new ArrayList<>();
+
     @ManyToMany(mappedBy = "classes")
-    @JsonIgnore // prevents back-reference serialization
+    @JsonIgnore
     private List<SubjectEntity> subjects = new ArrayList<>();
+
 
 }

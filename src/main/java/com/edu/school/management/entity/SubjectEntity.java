@@ -3,7 +3,10 @@ package com.edu.school.management.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "subjects")
@@ -36,5 +39,6 @@ public class SubjectEntity {
         joinColumns = @JoinColumn(name = "subject_id"),
         inverseJoinColumns = @JoinColumn(name = "class_id")
     )
-    private List<SchoolClassEntity> classes;
+    @JsonIgnore // don't serialize classes to avoid loops
+    private List<SchoolClassEntity> classes = new ArrayList<>();
 }

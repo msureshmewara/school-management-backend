@@ -1,5 +1,6 @@
 package com.edu.school.management.controller;
 
+import com.edu.school.management.dto.ClassDetailsDTO;
 import com.edu.school.management.entity.SchoolClassEntity;
 import com.edu.school.management.service.SchoolClassService;
 import lombok.RequiredArgsConstructor;
@@ -36,5 +37,10 @@ public class SchoolClassController {
     public ResponseEntity<Void> deleteClass(@PathVariable Long id) {
         schoolClassService.deleteClass(id);
         return ResponseEntity.noContent().build();
+    }
+    
+    @GetMapping("/{classId}/details")
+    public ResponseEntity<ClassDetailsDTO> getClassDetails(@PathVariable Long classId) {
+        return ResponseEntity.ok(schoolClassService.getClassDetails(classId));
     }
 }

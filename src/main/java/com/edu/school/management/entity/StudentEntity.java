@@ -1,6 +1,8 @@
 package com.edu.school.management.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,6 +34,7 @@ public class StudentEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", nullable = false)
+    @JsonBackReference
     private SchoolClassEntity schoolClass;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -98,4 +101,5 @@ public class StudentEntity {
     
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StudentSiblingEntity> siblings;
+
 }
