@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,32 +26,34 @@ public class TimetableController {
     private final SchoolClassRepository schoolClassRepository;
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
+    
+    
 
-    // ✅ Create a timetable entry
     @PostMapping("/create")
-    public ResponseEntity<TimetableEntity> createTimetable(@RequestBody TimetableRequestDTO request) {
-
-        SchoolClassEntity schoolClass = schoolClassRepository.findById(request.getClassId())
-                .orElseThrow(() -> new RuntimeException("Class not found"));
+    public ResponseEntity<?> createTimetable(@RequestBody TimetableRequestDTO request) {
+        UserEntity teacher = userRepository.findById(request.getTeacherId())
+                .orElseThrow(() -> new RuntimeException("Teacher not found"));
 
         SubjectEntity subject = subjectRepository.findById(request.getSubjectId())
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
 
-        UserEntity teacher = userRepository.findById(request.getTeacherId())
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+        SchoolClassEntity schoolClass = schoolClassRepository.findById(request.getClassId())
+                .orElseThrow(() -> new RuntimeException("Class not found"));
 
         TimetableEntity timetable = TimetableEntity.builder()
-                .schoolClass(schoolClass)
-                .subject(subject)
                 .teacher(teacher)
+                .subject(subject)
+                .schoolClass(schoolClass)
                 .dayOfWeek(request.getDayOfWeek())
                 .period(request.getPeriod())
                 .timeSlot(request.getTimeSlot())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
-        TimetableEntity saved = timetableRepository.save(timetable);
+        timetableRepository.save(timetable);
 
-        return ResponseEntity.ok(saved);
+        return ResponseEntity.ok("Timetable created successfully");
     }
 
     // ✅ Get timetable with attendance info
@@ -152,4 +155,44 @@ public class TimetableController {
 //        return ResponseEntity.ok([{}]);
 //    }
 
+    @GetMapping("/class/{classId}")
+    public ResponseEntity<List<TimetableResponseDTO>> getTimetableByClassWithAttendance(
+            @PathVariable Long classId,
+            @RequestParam(name = "date", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        if (date == null) {
+            date = LocalDate.now();
+        }
+
+        List<TimetableEntity> timetable = timetableRepository.findBySchoolClass_ClassId(classId);
+        List<TeacherAttendanceEntity> attendanceList = attendanceRepository.findByDate(date);
+
+        // Absent teachers
+        Set<Long> absentTeacherIds = attendanceList.stream()
+                .filter(a -> !a.getIsPresent())
+                .map(a -> a.getTeacher().getId())
+                .collect(Collectors.toSet());
+
+        List<TimetableResponseDTO> response = timetable.stream()
+                .map(entry -> TimetableResponseDTO.builder()
+                        .teacherId(entry.getTeacher().getId())
+                        .teacherName(entry.getTeacher().getFirstName() + " " + entry.getTeacher().getLastName())
+                        .isTeacherPresent(!absentTeacherIds.contains(entry.getTeacher().getId()))
+
+                        .subjectId(entry.getSubject().getSubjectId())
+                        .subjectName(entry.getSubject().getTitle())
+
+                        .classId(entry.getSchoolClass().getClassId())
+                        .className(entry.getSchoolClass().getClassName())
+                        .classSection(entry.getSchoolClass().getSection())
+
+                        .dayOfWeek(entry.getDayOfWeek())
+                        .period(entry.getPeriod())
+                        .timeSlot(entry.getTimeSlot())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
 }

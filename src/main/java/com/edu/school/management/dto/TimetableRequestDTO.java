@@ -12,11 +12,11 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class TimetableRequestDTO {
-    private Long classId;
+	private Long teacherId;
     private Long subjectId;
-    private Long teacherId;
-    private String dayOfWeek;
-    private Integer period;
-    private String timeSlot;
+    private Long classId;
+    private String dayOfWeek; // e.g. "MONDAY"
+    private Integer period;   // e.g. 1st, 2nd...
+    private String timeSlot;  // e.g. "09:00 - 09:45"
 }
 

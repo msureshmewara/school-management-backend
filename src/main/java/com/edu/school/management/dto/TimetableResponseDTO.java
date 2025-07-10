@@ -1,25 +1,25 @@
 package com.edu.school.management.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import lombok.*;
-
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
 public class TimetableResponseDTO {
-    private String className;
-    private String dayOfWeek;
-    private int period;
-    private String timeSlot;
-    private String subjectName;
+    private Long teacherId;
     private String teacherName;
-    private boolean teacherAbsent;
+    private Boolean isTeacherPresent;
+
+    private Long subjectId;
+    private String subjectName;
+
+    private Long classId;
+    private String className;
+    private String classSection;
+
+    private String dayOfWeek;
+    private Integer period;
+    private String timeSlot;
 }
 
 
