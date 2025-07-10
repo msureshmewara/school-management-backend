@@ -1,6 +1,7 @@
 package com.edu.school.management.controller;
 
 
+import com.edu.school.management.dto.TeacherAttendanceRequest;
 import com.edu.school.management.entity.TeacherAttendanceEntity;
 import com.edu.school.management.entity.UserEntity;
 import com.edu.school.management.exceptions.InvalidCredentialsException;
@@ -49,5 +50,26 @@ public class TeacherAttendanceController {
                 .filter(a -> a.getTeacher().getId().equals(teacherId))
                 .toList());
     }
+    
+    @PostMapping("/markBulkAttendance")
+    public ResponseEntity<ApiResponse<String>> markBulkAttendance(
+            @RequestBody List<TeacherAttendanceRequest> attendanceRequests) {
+
+        List<TeacherAttendanceEntity> records = attendanceRequests.stream().map(req -> {
+            UserEntity teacher = userRepository.findById(req.getTeacherId())
+                    .orElseThrow(() -> new RuntimeException("Teacher not found with ID: " + req.getTeacherId()));
+
+            return TeacherAttendanceEntity.builder()
+                    .teacher(teacher)
+                    .date(req.getDate() != null ? req.getDate() : LocalDate.now())
+                    .isPresent(req.getIsPresent())
+                    .build();
+        }).toList();
+
+        attendanceRepository.saveAll(records);
+
+        return ResponseEntity.ok(new ApiResponse<>("success", "Attendance created successfully", null));
+    }
+
 }
 

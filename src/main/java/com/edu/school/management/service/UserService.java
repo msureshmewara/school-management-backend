@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
+import com.edu.school.management.dto.AttendanceDTO;
+import com.edu.school.management.dto.UserWithAttendanceDTO;
 import com.edu.school.management.entity.UserEntity;
 import com.edu.school.management.repository.UserRepository;
 
@@ -24,7 +26,10 @@ public class UserService {
     public List<UserEntity> getAllUsers() {
         return userRepository.findAll();
     }
-
+    
+    public List<UserEntity> getUsersByRoleId(Long roleId) {
+        return userRepository.findByRoleRoleId(roleId);
+    }
 
     public Optional<UserEntity> updateUser(Long id, UserEntity updatedUser) {
         return userRepository.findById(id).map(user -> {
@@ -43,4 +48,35 @@ public class UserService {
 		// TODO Auto-generated method stub
 		return userRepository.findByUsernameAndPassword(username, password);
 	}
+	
+	public List<UserWithAttendanceDTO> getUsersWithAttendanceByRoleId(Long roleId) {
+	    List<UserEntity> users = userRepository.findByRoleRoleId(roleId);
+
+	    return users.stream().map(user -> {
+	        List<AttendanceDTO> attendance = user.getAttendance().stream()
+	                .map(att -> AttendanceDTO.builder()
+	                        .id(att.getId())
+	                        .date(att.getDate())
+	                        .isPresent(att.getIsPresent())
+	                        .build())
+	                .toList();
+
+	        return UserWithAttendanceDTO.builder()
+	                .id(user.getId())
+//	                .username(user.getUsername())
+	                .firstName(user.getFirstName())
+	                .lastName(user.getLastName())
+	                .contactNumber(user.getContactNumber())
+//	                .gender(user.getGender())
+//	                .address(user.getAddress())
+//	                .city(user.getCity())
+//	                .state(user.getState())
+//	                .country(user.getCountry())
+//	                .status(user.getStatus())
+	                .attendance(attendance)
+	                .build();
+	    }).toList();
+	}
+
+
 }

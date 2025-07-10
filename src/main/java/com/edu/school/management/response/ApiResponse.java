@@ -1,13 +1,14 @@
 package com.edu.school.management.response;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 @Builder
 public class ApiResponse<T> {
-    private int status;
+    private String status;
     private String message;
     private T data;
 }
