@@ -5,7 +5,10 @@ public record SubjectDTO(
 	    String subjectName,
 	    Integer totalTheoryMarks,
 	    Integer passingTheoryMarks,
+	    Integer obtainedTheoryMarks,
+	    Boolean hasInternal,
 	    Integer totalInternalMarks,
-	    Integer passingInternalMarks
+	    Integer passingInternalMarks,
+	    Integer obtainedInternalMarks
 	) {}
 

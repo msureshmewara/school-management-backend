@@ -60,11 +60,13 @@ public class SchoolClassService {
                 s.getTitle(), 
                 s.getTotalTheoryMarks(), 
                 s.getPassingTheoryMarks(),
+                s.getObtainedTheoryMarks(),
+                s.getHasInternal(),
                 s.getTotalInternalMarks(), 
-                s.getPassingInternalMarks()
+                s.getPassingInternalMarks(),
+                s.getObtainedInternalMarks()
             ))
             .toList();
-
         SchoolClassDTO classDto = new SchoolClassDTO(cls.getClassId(), cls.getClassName(), cls.getSection());
         return new ClassDetailsDTO(classDto, students, subjects);
     }
