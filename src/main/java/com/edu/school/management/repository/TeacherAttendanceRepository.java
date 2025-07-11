@@ -11,5 +11,6 @@ import com.edu.school.management.entity.TeacherAttendanceEntity;
 public interface TeacherAttendanceRepository extends JpaRepository<TeacherAttendanceEntity, Long> {
     List<TeacherAttendanceEntity> findByDate(LocalDate date);
     List<TeacherAttendanceEntity> findAllByTeacher_IdAndDate(Long teacherId, LocalDate date);
+    long countByDateAndIsPresentFalse(LocalDate date);
 
 }

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 import lombok.*;
 
 @Data
@@ -12,11 +14,17 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class TimetableRequestDTO {
-	private Long teacherId;
-    private Long subjectId;
     private Long classId;
-    private String dayOfWeek; // e.g. "MONDAY"
-    private Integer period;   // e.g. 1st, 2nd...
-    private String timeSlot;  // e.g. "09:00 - 09:45"
+    private String dayOfWeek;
+    private List<PeriodEntry> periods;
+
+    @Data
+    public static class PeriodEntry {
+        private Integer period;
+        private String timeSlot;
+        private Long subjectId;
+        private Long teacherId;
+    }
 }
+
 

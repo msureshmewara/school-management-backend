@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,31 +32,70 @@ public class TimetableController {
     
 
     @PostMapping("/create")
-    public ResponseEntity<?> createTimetable(@RequestBody TimetableRequestDTO request) {
-        UserEntity teacher = userRepository.findById(request.getTeacherId())
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+    public ResponseEntity<?> createBulkTimetable(@RequestBody TimetableRequestDTO request) {
+        Long classId = request.getClassId();
+        String dayOfWeek = request.getDayOfWeek();
 
-        SubjectEntity subject = subjectRepository.findById(request.getSubjectId())
-                .orElseThrow(() -> new RuntimeException("Subject not found"));
+        // 1. Validate class
+        SchoolClassEntity schoolClass = schoolClassRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Class not found with ID: " + classId));
 
-        SchoolClassEntity schoolClass = schoolClassRepository.findById(request.getClassId())
-                .orElseThrow(() -> new RuntimeException("Class not found"));
+        Set<Integer> seenPeriods = new HashSet<>();
+        Set<String> seenTimeSlots = new HashSet<>();
+        Set<Long> seenSubjects = new HashSet<>();
 
-        TimetableEntity timetable = TimetableEntity.builder()
-                .teacher(teacher)
-                .subject(subject)
-                .schoolClass(schoolClass)
-                .dayOfWeek(request.getDayOfWeek())
-                .period(request.getPeriod())
-                .timeSlot(request.getTimeSlot())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        List<TimetableEntity> timetableEntries = new ArrayList<>();
 
-        timetableRepository.save(timetable);
+        for (TimetableRequestDTO.PeriodEntry entry : request.getPeriods()) {
+            // 2. Validate required fields
+            if (entry.getTeacherId() == null || entry.getSubjectId() == null || entry.getTimeSlot() == null || entry.getPeriod() == null) {
+                return ResponseEntity.badRequest().body("Missing required field in period entry: " + entry);
+            }
 
-        return ResponseEntity.ok("Timetable created successfully");
+            // 3. Check for duplicate period numbers
+            if (!seenPeriods.add(entry.getPeriod())) {
+                return ResponseEntity.badRequest().body("Duplicate period number: " + entry.getPeriod());
+            }
+
+            // 4. Check for duplicate or overlapping time slots
+            if (!seenTimeSlots.add(entry.getTimeSlot())) {
+                return ResponseEntity.badRequest().body("Duplicate or overlapping time slot: " + entry.getTimeSlot());
+            }
+
+            // 5. Check for repeated subject in the same day
+            if (!seenSubjects.add(entry.getSubjectId())) {
+                return ResponseEntity.badRequest().body("Subject ID " + entry.getSubjectId() + " is repeated on the same day.");
+            }
+
+            // 6. Validate teacher
+            UserEntity teacher = userRepository.findById(entry.getTeacherId())
+                    .orElseThrow(() -> new RuntimeException("Teacher not found with ID: " + entry.getTeacherId()));
+
+            // 7. Validate subject
+            SubjectEntity subject = subjectRepository.findById(entry.getSubjectId())
+                    .orElseThrow(() -> new RuntimeException("Subject not found with ID: " + entry.getSubjectId()));
+
+            // 8. Build TimetableEntity
+            TimetableEntity timetable = TimetableEntity.builder()
+                    .teacher(teacher)
+                    .subject(subject)
+                    .schoolClass(schoolClass)
+                    .dayOfWeek(dayOfWeek)
+                    .period(entry.getPeriod())
+                    .timeSlot(entry.getTimeSlot())
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+
+            timetableEntries.add(timetable);
+        }
+
+        // 9. Save all after validation
+        timetableRepository.saveAll(timetableEntries);
+
+        return ResponseEntity.ok("Timetable created for multiple periods successfully");
     }
+
 
     // ✅ Get timetable with attendance info
 //    @GetMapping("/{classId}")
