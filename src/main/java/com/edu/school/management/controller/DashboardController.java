@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.edu.school.management.dto.DashboardStatsDTO;
+import com.edu.school.management.dto.DashboardSummaryDTO;
 import com.edu.school.management.service.DashboardService;
 
 import lombok.RequiredArgsConstructor;
@@ -18,8 +19,8 @@ public class DashboardController {
     private final DashboardService dashboardService;
 
     @GetMapping("/stats")
-    public ResponseEntity<DashboardStatsDTO> getDashboardStats() {
-        return ResponseEntity.ok(dashboardService.getStats());
+    public ResponseEntity<DashboardSummaryDTO> getDashboardStats() {
+        return ResponseEntity.ok(dashboardService.getDashboardSummary());
     }
 }
 

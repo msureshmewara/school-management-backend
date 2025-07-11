@@ -20,5 +20,12 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 	@Query("SELECT COUNT(u) FROM UserEntity u WHERE FUNCTION('month', u.dOB) = :month AND FUNCTION('day', u.dOB) = :day AND u.role.title = 'TEACHER'")
 	long countTeachersWithBirthdayToday(@Param("month") int month, @Param("day") int day);
 
+	@Query("SELECT u.id FROM UserEntity u WHERE u.role.title = 'TEACHER'")
+	List<Long> findAllTeacherIds();
+	
+    @Query("SELECT u FROM UserEntity u WHERE u.role.title = 'TEACHER' AND FUNCTION('MONTH', u.dOB) = :month AND FUNCTION('DAY', u.dOB) = :day")
+    List<UserEntity> findTeacherBirthdaysToday(@Param("month") int month, @Param("day") int day);
+
+
 }
 
