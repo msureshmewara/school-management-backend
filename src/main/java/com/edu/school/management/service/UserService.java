@@ -77,6 +77,25 @@ public class UserService {
 	                .build();
 	    }).toList();
 	}
+	public Optional<UserWithAttendanceDTO> getUserWithAttendanceByUserId(Long userId) {
+	    return userRepository.findById(userId).map(user -> {
+	        List<AttendanceDTO> attendance = user.getAttendance().stream()
+	                .map(att -> AttendanceDTO.builder()
+	                        .id(att.getId())
+	                        .date(att.getDate())
+	                        .isPresent(att.getIsPresent())
+	                        .build())
+	                .toList();
+
+	        return UserWithAttendanceDTO.builder()
+	                .id(user.getId())
+	                .firstName(user.getFirstName())
+	                .lastName(user.getLastName())
+	                .contactNumber(user.getContactNumber())
+	                .attendance(attendance)
+	                .build();
+	    });
+	}
 
 
 }

@@ -1,6 +1,5 @@
 package com.edu.school.management.exceptions;
 
-import jakarta.validation.ConstraintViolationException;
 import org.hibernate.TransientPropertyValueException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -15,21 +14,21 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String,Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
-        Map<String,String> fieldErrors = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
+        Map<String, String> fieldErrors = new HashMap<>();
         ex.getBindingResult().getFieldErrors()
-          .forEach(error -> fieldErrors.put(error.getField(), error.getDefaultMessage()));
+                .forEach(error -> fieldErrors.put(error.getField(), error.getDefaultMessage()));
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Map.of(
-                    "status", HttpStatus.BAD_REQUEST.value(),
-                    "message", "Validation failed",
-                    "errors", fieldErrors
+                        "status", HttpStatus.BAD_REQUEST.value(),
+                        "message", "Validation failed",
+                        "errors", fieldErrors
                 ));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String,Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         Map<String, String> fieldErrors = new HashMap<>();
         String msg = ex.getRootCause() != null ? ex.getRootCause().getMessage() : ex.getMessage();
 
@@ -41,8 +40,9 @@ public class GlobalExceptionHandler {
             } else {
                 fieldErrors.put("unknown_field", "A required field is missing");
             }
-        } else if (msg != null && msg.toLowerCase().contains("duplicate")) {
-            fieldErrors.put("unique_constraint", "Duplicate value violates unique constraint");
+        } else if (msg != null && msg.toLowerCase().contains("duplicate entry")) {
+            String duplicateValue = extractBetween(msg, "Duplicate entry '", "'");
+            fieldErrors.put("unique_constraint", "Duplicate entry for " + duplicateValue );
         } else {
             fieldErrors.put("error", "Data integrity issue: " + msg);
         }
@@ -50,31 +50,42 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Map.of(
-                    "status", HttpStatus.BAD_REQUEST.value(),
-                    "message", "Data integrity violation",
-                    "errors", fieldErrors
+                        "status", HttpStatus.BAD_REQUEST.value(),
+                        "message", "Data integrity violation",
+                        "errors", fieldErrors
                 ));
     }
 
     @ExceptionHandler(TransientPropertyValueException.class)
-    public ResponseEntity<Map<String,Object>> handleTransientValue(TransientPropertyValueException ex) {
+    public ResponseEntity<Map<String, Object>> handleTransientValue(TransientPropertyValueException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Map.of(
-                    "status", HttpStatus.BAD_REQUEST.value(),
-                    "message", "Entity reference error",
-                    "error", ex.getMessage()
+                        "status", HttpStatus.BAD_REQUEST.value(),
+                        "message", "Entity reference error",
+                        "error", ex.getMessage()
                 ));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String,Object>> handleGenericException(Exception ex) {
+    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of(
-                    "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "message", "Unexpected error occurred",
-                    "error", ex.getMessage()
+                        "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        "message", "Unexpected error occurred",
+                        "error", ex.getMessage()
                 ));
     }
+
+    private String extractBetween(String input, String start, String end) {
+        int startIndex = input.indexOf(start);
+        int endIndex = input.indexOf(end, startIndex + start.length());
+        if (startIndex != -1 && endIndex != -1) {
+            return input.substring(startIndex + start.length(), endIndex);
+        }
+        return "unknown";
+    }
+
+  
 }

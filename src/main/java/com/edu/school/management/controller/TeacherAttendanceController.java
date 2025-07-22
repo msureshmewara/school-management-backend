@@ -42,7 +42,7 @@ public class TeacherAttendanceController {
         return ResponseEntity.ok(attendanceRepository.save(attendance));
     }
 
-    @GetMapping("/teacher/{teacherId}")
+    @GetMapping("/getAttendanceByTeacher/{teacherId}")
     public ResponseEntity<List<TeacherAttendanceEntity>> getAttendanceByTeacher(@PathVariable Long teacherId) {
         return ResponseEntity.ok(attendanceRepository.findAll()
                 .stream()

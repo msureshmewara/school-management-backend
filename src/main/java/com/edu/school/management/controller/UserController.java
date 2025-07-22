@@ -1,5 +1,6 @@
 package com.edu.school.management.controller;
 
+import com.edu.school.management.dto.LoginResponseDTO;
 import com.edu.school.management.dto.UserWithAttendanceDTO;
 import com.edu.school.management.entity.UserEntity;
 import com.edu.school.management.exceptions.InvalidCredentialsException;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*; // ✅ Required for annotations
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -31,18 +33,36 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<UserEntity>> loginUser(@RequestBody UserEntity user) {
-        return userService.getUserByUsernameAndPassword(user.getUsername(), user.getPassword())
-            .map(foundUser -> {
-                ApiResponse<UserEntity> response = ApiResponse.<UserEntity>builder()
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> loginUser(@RequestBody UserEntity userR) {
+        return userService.getUserByUsernameAndPassword(userR.getUsername(), userR.getPassword())
+            .map(user -> {
+                LoginResponseDTO dto = new LoginResponseDTO();
+                dto.setId(user.getId());
+                dto.setUsername(user.getUsername());
+                dto.setFirstName(user.getFirstName());
+                dto.setLastName(user.getLastName());
+                dto.setGender(user.getGender());
+                dto.setContactNumber(user.getContactNumber());
+                dto.setAddress(user.getAddress());
+                dto.setCity(user.getCity());
+                dto.setState(user.getState());
+                dto.setPinCode(user.getPinCode());
+                dto.setCountry(user.getCountry());
+                dto.setStatus(user.getStatus());
+                dto.setRole(user.getRole().getTitle());
+                dto.setDob(user.getDOB().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+                ApiResponse<LoginResponseDTO> response = ApiResponse.<LoginResponseDTO>builder()
                     .status("success")
                     .message("Login successful")
-                    .data(foundUser)
+                    .data(dto)
                     .build();
+
                 return ResponseEntity.ok(response);
             })
             .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
     }
+
 
 
 
@@ -74,5 +94,12 @@ public class UserController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/byUserId/{userId}/with-attendance")
+    public ResponseEntity<UserWithAttendanceDTO> getUserWithAttendanceByUserId(@PathVariable Long userId) {
+        return userService.getUserWithAttendanceByUserId(userId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
