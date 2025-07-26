@@ -49,5 +49,22 @@ public class MarksheetController {
             );
         }
     }
+    
+    @GetMapping("/evaluate/student/{studentId}")
+    public ResponseEntity<?> evaluateMarksheetByStudentId(@PathVariable Long studentId) {
+        try {
+            MarksheetResult result = marksheetService.evaluateMarksheetByStudentId(studentId);
+
+            return ResponseEntity.ok(
+                new ApiResponse<>("success", "Marksheet evaluated successfully", result)
+            );
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(
+                new ApiResponse<>("error", "Evaluation failed: " + e.getMessage(), null)
+            );
+        }
+    }
+
 
 }

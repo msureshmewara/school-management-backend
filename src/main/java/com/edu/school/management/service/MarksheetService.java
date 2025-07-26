@@ -105,5 +105,15 @@ public class MarksheetService {
 
         return new MarksheetResult(studentInfo, overallPass, subjectResults);
     }
+    
+    public MarksheetResult evaluateMarksheetByStudentId(Long studentId) {
+        StudentEntity student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentId));
+
+        MarksheetEntity marksheet = marksheetRepository.findTopByStudentOrderByIdDesc(student)
+                .orElseThrow(() -> new RuntimeException("Marksheet not found for student ID: " + studentId));
+
+        return evaluateMarksheet(marksheet.getId()); // Reuse existing logic
+    }
 
 }

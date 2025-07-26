@@ -13,11 +13,15 @@ import java.util.List;
 
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
-@Table(name = "students")
+@Table(name = "students", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_username", columnNames = "username"),
+        @UniqueConstraint(name = "uk_rollNumber", columnNames = "rollNumber")
+    })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+
 public class StudentEntity {
 
     @Id
@@ -28,7 +32,7 @@ public class StudentEntity {
     @Column(nullable = false, unique = true) private String username;
     @Column(nullable = false) private String password;
     @Column(nullable = false) private String gender;
-    @Column(nullable = false) private Integer rollNumber;
+    @Column(nullable = false, unique = true) private Integer rollNumber;
     @Column(nullable = false) private String scholarNumber;
     @Column(nullable = false) private String className;  // This must exist
 

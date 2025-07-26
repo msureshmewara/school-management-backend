@@ -69,11 +69,29 @@ public class DashboardService {
         List<StudentEntity> birthdayStudentEntities = studentRepository.findBirthdaysToday(month, day);
         List<PersonDTO> birthdayStudents = birthdayStudentEntities.stream()
             .map(student -> {
+            	 String fatherName = student.getFamily() != null && !student.getFamily().isEmpty()
+                         ? student.getFamily().get(0).getFatherName()
+                         : "N/A";
+            	 String fatherPhone = student.getFamily() != null && !student.getFamily().isEmpty()
+                         ? student.getFamily().get(0).getFatherPhone()
+                         : "N/A";
+            	 String guardianName = student.getFamily() != null && !student.getFamily().isEmpty()
+                         ? student.getFamily().get(0).getGuardianName()
+                         : "N/A";
+            	 String guardianPhone = student.getFamily() != null && !student.getFamily().isEmpty()
+                         ? student.getFamily().get(0).getGuardianPhone()
+                         : "N/A";
+            	 
                 PersonDTO p = new PersonDTO();
                 p.setId(student.getStudentPin());
                 p.setName(student.getFirstName() + " " + student.getLastName());
                 p.setClassName(student.getClassName());
                 p.setDob(student.getDOB().toString());
+                p.setFatherName(fatherName);
+                p.setFatherPhone(fatherPhone);
+                p.setGuardianName(guardianName);
+                p.setGuardianPhone(guardianPhone);
+                
                 return p;
             }).collect(Collectors.toList());
 
@@ -91,6 +109,8 @@ public class DashboardService {
                 p.setName(teacher.getFirstName() + " " + teacher.getLastName());
                 p.setClassName(null); // Teachers may not have a className, or you can set their department
                 p.setDob(teacher.getDOB().toString());
+                p.setContactNumber(teacher.getContactNumber());
+                
                 return p;
             }).collect(Collectors.toList());
 
@@ -138,11 +158,28 @@ public class DashboardService {
                 double pendingAmount = (student.getTotalFees() - student.getFeesDiscount()) - 
                         feesRepository.sumPaidAmountByStudent(student.getStudentPin());
                 if (pendingAmount > 0) {
+                	
+                	String fatherName = student.getFamily() != null && !student.getFamily().isEmpty()
+                            ? student.getFamily().get(0).getFatherName()
+                            : "N/A";
+               	 String fatherPhone = student.getFamily() != null && !student.getFamily().isEmpty()
+                            ? student.getFamily().get(0).getFatherPhone()
+                            : "N/A";
+               	 String guardianName = student.getFamily() != null && !student.getFamily().isEmpty()
+                            ? student.getFamily().get(0).getGuardianName()
+                            : "N/A";
+               	 String guardianPhone = student.getFamily() != null && !student.getFamily().isEmpty()
+                            ? student.getFamily().get(0).getGuardianPhone()
+                            : "N/A";
                     PendingStudentFeeDTO p = new PendingStudentFeeDTO();
                     p.setId(student.getStudentPin());
                     p.setName(student.getFirstName() + " " + student.getLastName());
                     p.setClassName(student.getClassName());
                     p.setPendingAmount(pendingAmount);
+                    p.setFatherName(fatherName);
+                    p.setFatherPhone(fatherPhone);
+                    p.setGuardianName(guardianName);
+                    p.setGuardianPhone(guardianPhone);
                     return p;
                 }
                 return null;

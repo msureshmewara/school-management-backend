@@ -8,4 +8,8 @@ public class PendingStudentFeeDTO {
     private String name;
     private String className;
     private double pendingAmount;
+    private String fatherName;
+    private String fatherPhone;
+    private String guardianName;
+    private String guardianPhone;
 }

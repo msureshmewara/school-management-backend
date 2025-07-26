@@ -10,6 +10,7 @@ import com.edu.school.management.dto.UserWithAttendanceDTO;
 import com.edu.school.management.entity.UserEntity;
 import com.edu.school.management.repository.UserRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,23 +80,30 @@ public class UserService {
 	}
 	public Optional<UserWithAttendanceDTO> getUserWithAttendanceByUserId(Long userId) {
 	    return userRepository.findById(userId).map(user -> {
-	        List<AttendanceDTO> attendance = user.getAttendance().stream()
+	        LocalDate today = LocalDate.now();
+
+	        // ✅ Filter only today's attendance (if exists)
+	        Optional<AttendanceDTO> todayAttendance = user.getAttendance().stream()
+	                .filter(att -> today.equals(att.getDate()))
+	                .findFirst()
 	                .map(att -> AttendanceDTO.builder()
 	                        .id(att.getId())
 	                        .date(att.getDate())
 	                        .isPresent(att.getIsPresent())
-	                        .build())
-	                .toList();
+	                        .build());
 
 	        return UserWithAttendanceDTO.builder()
 	                .id(user.getId())
 	                .firstName(user.getFirstName())
 	                .lastName(user.getLastName())
 	                .contactNumber(user.getContactNumber())
-	                .attendance(attendance)
+	                .attendance(todayAttendance
+	                        .map(List::of)
+	                        .orElse(List.of())) // ✅ Return empty list if no attendance today
 	                .build();
 	    });
 	}
+
 
 
 }

@@ -2,6 +2,7 @@ package com.edu.school.management.controller;
 
 import com.edu.school.management.dto.StudentFeeResponse;
 import com.edu.school.management.dto.StudentFullResponseDTO;
+import com.edu.school.management.dto.StudentLoginResponseDTO;
 import com.edu.school.management.dto.StudentSummaryDTO;
 import com.edu.school.management.entity.StudentEntity;
 import com.edu.school.management.exceptions.InvalidCredentialsException;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*; // ✅ Required for annotations
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,11 +36,40 @@ public class StudentController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<StudentEntity> loginUser(@RequestBody StudentEntity user) {
+    public ResponseEntity<StudentLoginResponseDTO> loginUser(@RequestBody StudentEntity user) {
         return studentService.getUserByUsernameAndPassword(user.getUsername(), user.getPassword())
-                .map(ResponseEntity::ok)
+                .map(student -> {
+                    StudentLoginResponseDTO dto = new StudentLoginResponseDTO();
+                    dto.setStudentPin(student.getStudentPin());
+                    dto.setUsername(student.getUsername());
+                    dto.setFirstName(student.getFirstName());
+                    dto.setLastName(student.getLastName());
+                    dto.setGender(student.getGender());
+                    dto.setRollNumber(student.getRollNumber());
+                    dto.setScholarNumber(student.getScholarNumber());
+                    dto.setContactNumber(student.getContactNumber());
+                    dto.setStatus(student.getStatus());
+                    dto.setClassName(student.getClassName());
+                    dto.setDob(student.getDOB().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                    dto.setAddress(student.getAddress());
+                    dto.setCaste(student.getCaste());
+                    dto.setReligion(student.getReligion());
+                    dto.setNationality(student.getNationality());
+                    dto.setMotherToungue(student.getMotherToungue());
+                    dto.setCity(student.getCity());
+                    dto.setState(student.getState());
+                    dto.setPinCode(student.getPinCode());
+                    dto.setCountry(student.getCountry());
+                    dto.setTotalFees(student.getTotalFees());
+                    dto.setFeesDiscount(student.getFeesDiscount());
+                    dto.setCreatedBy(student.getCreatedBy());
+                    dto.setRoleTitle(student.getRole() != null ? student.getRole().getTitle() : null);
+
+                    return ResponseEntity.ok(dto);
+                })
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
     }
+
 
     @PutMapping("/updateStudent/{id}")
     public ResponseEntity<StudentEntity> updateStudent(@PathVariable Long id, @RequestBody StudentEntity user) {

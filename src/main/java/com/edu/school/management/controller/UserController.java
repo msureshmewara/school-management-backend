@@ -102,4 +102,10 @@ public class UserController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+    
+    @GetMapping("/getUsersByRole/{roleId}")
+    public ResponseEntity<List<UserEntity>> getUsersByRole(@PathVariable Long roleId) {
+        List<UserEntity> users = userService.getUsersByRoleId(roleId);
+        return ResponseEntity.ok(users);
+    }
 }
