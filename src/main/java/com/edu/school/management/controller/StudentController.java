@@ -98,6 +98,12 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getFullStudentDetails(id));
     }
     
+    @GetMapping("/stuDetailsByClass/{id}")
+    public ResponseEntity<List<StudentSummaryDTO>> getFullStudentByClassId(@PathVariable Long id) {
+    	 List<StudentSummaryDTO> students = studentService.getSummariesByClass(id);
+         return ResponseEntity.ok(students);
+    }
+    
     @GetMapping("/summary")
     public ResponseEntity<?> getStudentSummary(
             @RequestParam Long classId,
