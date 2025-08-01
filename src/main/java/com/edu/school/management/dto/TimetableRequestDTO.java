@@ -16,6 +16,7 @@ import lombok.*;
 public class TimetableRequestDTO {
     private Long classId;
     private String dayOfWeek;
+    private Long schoolId;
     private List<PeriodEntry> periods;
 
     @Data

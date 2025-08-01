@@ -54,6 +54,9 @@ public class TimetableEntity {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    @Column(nullable = false)
+    private Long schoolId;
 
     @PrePersist
     public void onCreate() {

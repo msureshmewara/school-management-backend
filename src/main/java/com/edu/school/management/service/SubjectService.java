@@ -37,6 +37,7 @@ public class SubjectService {
                 .passingInternalMarks(request.getPassingInternalMarks())
                 .obtainedInternalMarks(request.getObtainedInternalMarks())
                 .classes(classes)
+                .schoolId(request.getSchoolId())
                 .build();
 
         return subjectRepository.save(subject);
@@ -45,4 +46,14 @@ public class SubjectService {
     public List<SubjectEntity> getAllSubjects() {
         return subjectRepository.findAll();
     }
+    
+    public List<SubjectEntity> getSubjectsBySchoolAndClass(Long schoolId, Long classId) {
+        return subjectRepository.findBySchoolIdAndClassId(schoolId, classId);
+    }
+    
+    public List<SubjectEntity> getAllSubjectsBySchoolId(Long schoolId) {
+        return subjectRepository.findBySchoolId(schoolId);
+    }
+
+
 }

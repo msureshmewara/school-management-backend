@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface RoleRepository extends JpaRepository<RoleEntity, Long> {
+	boolean existsByTitle(String title);
     Optional<RoleEntity> findByTitle(String title);
     List<RoleSummary> findAllProjectedBy();
 

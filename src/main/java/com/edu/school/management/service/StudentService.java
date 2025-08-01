@@ -1,6 +1,8 @@
 package com.edu.school.management.service;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.edu.school.management.dto.StudentDocDTO;
@@ -10,15 +12,18 @@ import com.edu.school.management.dto.StudentFeesDTO;
 import com.edu.school.management.dto.StudentFamilyDTO;
 import com.edu.school.management.dto.StudentFullResponseDTO;
 import com.edu.school.management.dto.StudentPhotoDTO;
+import com.edu.school.management.dto.StudentRequestDTO;
 import com.edu.school.management.dto.StudentSiblingDTO;
 import com.edu.school.management.dto.StudentSummaryDTO;
 import com.edu.school.management.entity.*;
 import com.edu.school.management.repository.RoleRepository;
 import com.edu.school.management.repository.SchoolClassRepository;
+import com.edu.school.management.repository.SchoolRepository;
 import com.edu.school.management.repository.StudentRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,43 +32,122 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StudentService {
 
-    private final StudentRepository studentRepository;
-    private final RoleRepository roleRepo;
-    private final SchoolClassRepository classRepo;
+	@Autowired private StudentRepository studentRepo;
+    @Autowired private RoleRepository roleRepo;
+    @Autowired private SchoolRepository schoolRepo;
+    @Autowired private SchoolClassRepository classRepo;
 
-    // ✅ Save Student with all nested data
-    public StudentEntity createUser(StudentEntity student) {
-        RoleEntity role = roleRepo.findById(student.getRole().getRoleId())
-                .orElseThrow(() -> new EntityNotFoundException("Role not found"));
-        SchoolClassEntity clazz = classRepo.findById(student.getSchoolClass().getClassId())
-                .orElseThrow(() -> new EntityNotFoundException("Class not found"));
+    public StudentEntity createStudent(StudentRequestDTO dto) {
+    	SchoolEntity school = schoolRepo.findById(dto.getSchoolId())
+    		    .orElseThrow(() -> new RuntimeException("School not found"));
 
-        student.setRole(role);
-        student.setSchoolClass(clazz);
+    		RoleEntity role = roleRepo.findById(dto.getRoleId())
+    		    .orElseThrow(() -> new RuntimeException("Role not found"));
 
-        // Set bidirectional links
-        if (student.getFees() != null) {
-            student.getFees().forEach(f -> f.setStudent(student));
+    		SchoolClassEntity schoolClass = classRepo.findById(dto.getClassId())
+    		    .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        StudentEntity student = StudentEntity.builder()
+                .username(dto.getUsername())
+                .password(dto.getPassword())
+                .gender(dto.getGender())
+                .rollNumber(dto.getRollNumber())
+                .scholarNumber(dto.getScholarNumber())
+                .firstName(dto.getFirstName())
+                .lastName(dto.getLastName())
+                .contactNumber(dto.getContactNumber())
+                .dOB(dto.getDob())
+                .address(dto.getAddress())
+                .caste(dto.getCaste())
+                .religion(dto.getReligion())
+                .nationality(dto.getNationality())
+                .motherToungue(dto.getMotherToungue())
+                .medicalHistory(dto.getMedicalHistory())
+                .apaarId(dto.getApaarId())
+                .prevSchool(dto.getPrevSchool())
+                .prevEduBoard(dto.getPrevEduBoard())
+                .registrationNumber(dto.getRegistrationNumber())
+                .enrollmentNumber(dto.getEnrollmentNumber())
+                .bloodGroup(dto.getBloodGroup())
+                .city(dto.getCity())
+                .state(dto.getState())
+                .pinCode(dto.getPinCode())
+                .country(dto.getCountry())
+                .status(dto.getStatus())
+                .totalFees(dto.getTotalFees())
+                .feesDiscount(dto.getFeesDiscount())
+                .createdBy(dto.getCreatedBy())
+                .className(dto.getClassName())
+                .isDisable(dto.getIsDisable())
+                .sssmidNum(dto.getSssmidNum())
+                .aadharCardNum(dto.getAadharCardNum())
+                .rationCardNum(dto.getRationCardNum())
+                .admissionFormNumber(dto.getAdmissionFormNumber())
+                .disabilityType(dto.getDisabilityType())
+                .currentEduBoard(dto.getCurrentEduBoard())
+                .school(school)
+                .role(role)
+                .schoolClass(schoolClass)
+                .build();
+
+        // Set parent reference to child entities
+        if (dto.getFees() != null) {
+            List<StudentFeesEntity> fees = dto.getFees().stream().map(f -> {
+                StudentFeesEntity fee = new StudentFeesEntity();
+                fee.setStudent(student);
+                fee.setTotalFees(f.getTotalFees());
+                fee.setPaymentDate(f.getPaymentDate());
+                fee.setPaymentMode(f.getPaymentMode());
+                fee.setPaidAmount(f.getPaidAmount());
+                fee.setStatus(f.getStatus());
+                fee.setCreatedAt(LocalDateTime.now());
+                fee.setUpdatedAt(LocalDateTime.now());
+                return fee;
+            }).toList();
+            student.setFees(fees);
         }
 
-        if (student.getFamily() != null) {
-            student.getFamily().forEach(f -> f.setStudent(student));
+        if (dto.getFamily() != null) {
+            List<StudentFamilyEntity> families = dto.getFamily().stream().map(f -> {
+                StudentFamilyEntity fam = new StudentFamilyEntity();
+                fam.setStudent(student);
+                fam.setFatherName(f.getFatherName());
+                fam.setFatherPhone(f.getFatherPhone());
+                fam.setFatherEmail(f.getFatherEmail());
+                fam.setMotherName(f.getMotherName());
+                fam.setMotherPhone(f.getMotherPhone());
+                fam.setCreatedBy(f.getCreatedBy());
+                return fam;
+            }).toList();
+            student.setFamily(families);
         }
 
-        if (student.getDocuments() != null) {
-            student.getDocuments().forEach(doc -> doc.setStudent(student));
+        if (dto.getDocuments() != null) {
+            List<StudentDocEntity> docs = dto.getDocuments().stream().map(d -> {
+                StudentDocEntity doc = new StudentDocEntity();
+                doc.setStudent(student);
+               
+                return doc;
+            }).toList();
+            student.setDocuments(docs);
         }
 
-        if (student.getPhotos() != null) {
-            student.getPhotos().setStudent(student);
+        if (dto.getPhotos() != null) {
+            StudentPhotoEntity photo = new StudentPhotoEntity();
+            photo.setStudent(student);
+            photo.setCreatedBy(dto.getPhotos().getCreatedBy());
+            photo.setCreatedAt(LocalDateTime.now());
+            photo.setUpdatedAt(LocalDateTime.now());
+            student.setPhotos(photo);
+            
         }
 
-        return studentRepository.save(student);
+        return studentRepo.save(student);
     }
 
     // ✅ Fetch all students
     public List<StudentEntity> getAllStudents() {
-        return studentRepository.findAll();
+        return studentRepo.findAll();
     }
 
     // ✅ Update basic student info
@@ -73,7 +157,7 @@ public class StudentService {
         SchoolClassEntity clazz = classRepo.findById(updatedUser.getSchoolClass().getClassId())
                 .orElseThrow(() -> new EntityNotFoundException("Class not found"));
 
-        return studentRepository.findById(id).map(existing -> {
+        return studentRepo.findById(id).map(existing -> {
             existing.setUsername(updatedUser.getUsername());
             existing.setPassword(updatedUser.getPassword());
             existing.setGender(updatedUser.getGender());
@@ -156,7 +240,7 @@ public class StudentService {
                 });
             }
 
-            return studentRepository.save(existing);
+            return studentRepo.save(existing);
         });
     }
 
@@ -164,17 +248,17 @@ public class StudentService {
 
     // ✅ Delete student
     public void deleteUser(Long id) {
-        studentRepository.deleteById(id);
+    	studentRepo.deleteById(id);
     }
 
     // ✅ Find student by username and password
     public Optional<StudentEntity> getUserByUsernameAndPassword(String username, String password) {
-        return studentRepository.findByUsernameAndPassword(username, password);
+        return studentRepo.findByUsernameAndPassword(username, password);
     }
 
     // ✅ Get student and fee details by roll/class/section
     public StudentFeeResponse getStudentWithFees(Integer rollNumber, String className, String section) {
-        StudentEntity student = studentRepository
+        StudentEntity student = studentRepo
                 .findByRollNumberAndSchoolClass_ClassNameAndSchoolClass_Section(rollNumber, className, section)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
@@ -213,7 +297,7 @@ public class StudentService {
 
     // ✅ Get full student details including family, fees, photos, and multiple documents
     public StudentFullResponseDTO getFullStudentDetails(Long id) {
-        StudentEntity student = studentRepository.findById(id)
+        StudentEntity student = studentRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         StudentFullResponseDTO dto = new StudentFullResponseDTO();
@@ -337,7 +421,7 @@ public class StudentService {
         return dto;
     }
     public List<StudentSummaryDTO> getSummariesByClass(Long classId) {
-        return studentRepository.findBySchoolClass_ClassId(classId).stream()
+        return studentRepo.findBySchoolClass_ClassId(classId).stream()
                 .map(this::mapToSummary)
                 .toList();
     }
@@ -355,7 +439,7 @@ public class StudentService {
 
 
     public Optional<StudentSummaryDTO> getSummaryByClassAndRoll(Long classId, Integer rollNumber) {
-        return studentRepository.findBySchoolClass_ClassIdAndRollNumber(classId, rollNumber)
+        return studentRepo.findBySchoolClass_ClassIdAndRollNumber(classId, rollNumber)
                 .map(this::mapToSummary);
     }
 
@@ -419,11 +503,11 @@ public class StudentService {
 //}
 
     public Optional<StudentEntity> findBySchoolClass_ClassIdAndRollNumber(Long classId, Integer rollNumber) {
-        return studentRepository.findBySchoolClass_ClassIdAndRollNumber(classId, rollNumber);
+        return studentRepo.findBySchoolClass_ClassIdAndRollNumber(classId, rollNumber);
     }
 
     public List<StudentSummaryDTO> getStudentsWithPendingFees() {
-        return studentRepository.findAll().stream()
+        return studentRepo.findAll().stream()
                 .filter(student -> {
                     double totalPaid = student.getFees() != null
                             ? student.getFees().stream()
@@ -439,6 +523,9 @@ public class StudentService {
                 })
                 .map(this::mapToSummary)
                 .toList();
+    }
+    public List<StudentEntity> getAllStudentsBySchoolId(Long schoolId) {
+        return studentRepo.findAllBySchoolId(schoolId);
     }
 
 }

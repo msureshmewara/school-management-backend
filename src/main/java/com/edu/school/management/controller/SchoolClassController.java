@@ -26,6 +26,11 @@ public class SchoolClassController {
         return ResponseEntity.ok(schoolClassService.getAllClasses());
     }
 
+    @GetMapping("/getAllClassesBySchool/{schoolId}")
+    public ResponseEntity<List<SchoolClassEntity>> getAllClassesBySchool(@PathVariable Long schoolId) {
+        return ResponseEntity.ok(schoolClassService.getAllClassesBySchoolId(schoolId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<SchoolClassEntity> getClassById(@PathVariable Long id) {
         return schoolClassService.getClassById(id)
@@ -40,7 +45,9 @@ public class SchoolClassController {
     }
     
     @GetMapping("/{classId}/details")
-    public ResponseEntity<ClassDetailsDTO> getClassDetails(@PathVariable Long classId) {
-        return ResponseEntity.ok(schoolClassService.getClassDetails(classId));
+    public ResponseEntity<ClassDetailsDTO> getClassDetails(
+            @PathVariable Long classId,
+            @RequestParam Long schoolId) {
+        return ResponseEntity.ok(schoolClassService.getClassDetails(classId, schoolId));
     }
 }

@@ -44,31 +44,45 @@ public class SchoolClassService {
     	classRepo.deleteById(id);
     }
     
-    public ClassDetailsDTO getClassDetails(Long classId) {
-        var cls = classRepo.findById(classId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found"));
+   public ClassDetailsDTO getClassDetails(Long classId, Long schoolId) {
+    var cls = classRepo.findByClassIdAndSchoolId(classId, schoolId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found in this school"));
 
-        List<StudentSummDTO> students = studentRepo.findBySchoolClass_ClassId(classId)
-            .stream()
-            .map(s -> new StudentSummDTO(s.getStudentPin(), s.getUsername(), s.getFirstName(), s.getLastName(), s.getRollNumber()))
-            .toList();
+    List<StudentSummDTO> students = studentRepo.findBySchoolClass_ClassIdAndSchoolId(classId, schoolId)
+        .stream()
+        .map(s -> new StudentSummDTO(
+            s.getStudentPin(),
+            s.getUsername(),
+            s.getFirstName(),
+            s.getLastName(),
+            s.getRollNumber()
+        ))
+        .toList();
 
-        List<SubjectDTO> subjects = subjectRepo.findAllByClassId(classId)
-            .stream()
-            .map(s -> new SubjectDTO(
-                s.getSubjectId(), 
-                s.getTitle(), 
-                s.getTotalTheoryMarks(), 
-                s.getPassingTheoryMarks(),
-                s.getObtainedTheoryMarks(),
-                s.getHasInternal(),
-                s.getTotalInternalMarks(), 
-                s.getPassingInternalMarks(),
-                s.getObtainedInternalMarks()
-            ))
-            .toList();
-        SchoolClassDTO classDto = new SchoolClassDTO(cls.getClassId(), cls.getClassName(), cls.getSection());
-        return new ClassDetailsDTO(classDto, students, subjects);
+    List<SubjectDTO> subjects = subjectRepo.findAllByClassIdAndSchoolId(classId, schoolId)
+        .stream()
+        .map(s -> new SubjectDTO(
+            s.getSubjectId(), 
+            s.getTitle(), 
+            s.getTotalTheoryMarks(), 
+            s.getPassingTheoryMarks(),
+            s.getObtainedTheoryMarks(),
+            s.getHasInternal(),
+            s.getTotalInternalMarks(), 
+            s.getPassingInternalMarks(),
+            s.getObtainedInternalMarks()
+        ))
+        .toList();
+
+    SchoolClassDTO classDto = new SchoolClassDTO(cls.getClassId(), cls.getClassName(), cls.getSection());
+
+    return new ClassDetailsDTO(classDto, students, subjects);
+}
+
+    
+    public List<SchoolClassEntity> getAllClassesBySchoolId(Long schoolId) {
+        return classRepo.findBySchoolId(schoolId);
     }
+
 
 }

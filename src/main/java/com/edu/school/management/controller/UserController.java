@@ -28,9 +28,11 @@ public class UserController {
     }
 
     @GetMapping("/getAllUsers")
-    public ResponseEntity<List<UserEntity>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<List<UserEntity>> getAllUsers(@RequestParam Long schoolId) {
+        return ResponseEntity.ok(userService.getAllUsersBySchoolId(schoolId));
     }
+
+
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponseDTO>> loginUser(@RequestBody UserEntity userR) {
@@ -51,6 +53,7 @@ public class UserController {
                 dto.setStatus(user.getStatus());
                 dto.setRole(user.getRole().getTitle());
                 dto.setDob(user.getDOB().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                dto.setSchoolId(user.getSchoolId());
 
                 ApiResponse<LoginResponseDTO> response = ApiResponse.<LoginResponseDTO>builder()
                     .status("success")
@@ -102,6 +105,19 @@ public class UserController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+    
+    @GetMapping("/getSchoolUsers/{roleId}/schoolId/{schoolId}/with-attendance")
+    public ResponseEntity<List<UserWithAttendanceDTO>> getUsersWithAttendanceByRoleAndSchoolId(
+            @PathVariable Long roleId,
+            @PathVariable Long schoolId) {
+
+        List<UserWithAttendanceDTO> result = userService.getUsersWithAttendanceByRoleAndSchoolId(roleId, schoolId);
+        if (result.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(result);
+    }
+
     
     @GetMapping("/getUsersByRole/{roleId}")
     public ResponseEntity<List<UserEntity>> getUsersByRole(@PathVariable Long roleId) {

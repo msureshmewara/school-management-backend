@@ -35,6 +35,7 @@ public class TimetableController {
     public ResponseEntity<?> createBulkTimetable(@RequestBody TimetableRequestDTO request) {
         Long classId = request.getClassId();
         String dayOfWeek = request.getDayOfWeek();
+        Long schoolId = request.getSchoolId();
 
         // 1. Validate class
         SchoolClassEntity schoolClass = schoolClassRepository.findById(classId)
@@ -81,6 +82,7 @@ public class TimetableController {
                     .subject(subject)
                     .schoolClass(schoolClass)
                     .dayOfWeek(dayOfWeek)
+                    .schoolId(schoolId)
                     .period(entry.getPeriod())
                     .timeSlot(entry.getTimeSlot())
                     .createdAt(LocalDateTime.now())
@@ -195,39 +197,39 @@ public class TimetableController {
 //
 //        return ResponseEntity.ok([{}]);
 //    }
-
+//
     @GetMapping("/class/{classId}")
     public ResponseEntity<List<TimetableResponseDTO>> getTimetableByClassWithAttendance(
             @PathVariable Long classId,
-            @RequestParam(name = "date", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @RequestParam(name = "schoolId") Long schoolId,
+            @RequestParam(name = "dayOfWeek") String dayOfWeek) {
 
-        if (date == null) {
-            date = LocalDate.now();
-        }
+        // 🔍 Get timetable for class, school, and dayOfWeek
+        List<TimetableEntity> timetable = timetableRepository
+                .findBySchoolClass_ClassIdAndSchoolIdAndDayOfWeek(classId, schoolId, dayOfWeek.toUpperCase());
 
-        List<TimetableEntity> timetable = timetableRepository.findBySchoolClass_ClassId(classId);
-        List<TeacherAttendanceEntity> attendanceList = attendanceRepository.findByDate(date);
+        // 🔍 Get today's date for attendance check
+        LocalDate today = LocalDate.now();
 
-        // Absent teachers
+        List<TeacherAttendanceEntity> attendanceList =
+                attendanceRepository.findByDateAndSchoolId(today, schoolId);
+
         Set<Long> absentTeacherIds = attendanceList.stream()
                 .filter(a -> !a.getIsPresent())
                 .map(a -> a.getTeacher().getId())
                 .collect(Collectors.toSet());
 
+        // 🔄 Build response
         List<TimetableResponseDTO> response = timetable.stream()
                 .map(entry -> TimetableResponseDTO.builder()
                         .teacherId(entry.getTeacher().getId())
                         .teacherName(entry.getTeacher().getFirstName() + " " + entry.getTeacher().getLastName())
                         .isTeacherPresent(!absentTeacherIds.contains(entry.getTeacher().getId()))
-
                         .subjectId(entry.getSubject().getSubjectId())
                         .subjectName(entry.getSubject().getTitle())
-
                         .classId(entry.getSchoolClass().getClassId())
                         .className(entry.getSchoolClass().getClassName())
                         .classSection(entry.getSchoolClass().getSection())
-
                         .dayOfWeek(entry.getDayOfWeek())
                         .period(entry.getPeriod())
                         .timeSlot(entry.getTimeSlot())
@@ -236,4 +238,46 @@ public class TimetableController {
 
         return ResponseEntity.ok(response);
     }
+
+
+//    @GetMapping("/class/{classId}")
+//    public ResponseEntity<List<TimetableResponseDTO>> getTimetableByClassWithAttendance(
+//            @PathVariable Long classId,
+//            @RequestParam(name = "date", required = false)
+//            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+//
+//        if (date == null) {
+//            date = LocalDate.now();
+//        }
+//
+//        List<TimetableEntity> timetable = timetableRepository.findBySchoolClass_ClassId(classId);
+//        List<TeacherAttendanceEntity> attendanceList = attendanceRepository.findByDate(date);
+//
+//        // Absent teachers
+//        Set<Long> absentTeacherIds = attendanceList.stream()
+//                .filter(a -> !a.getIsPresent())
+//                .map(a -> a.getTeacher().getId())
+//                .collect(Collectors.toSet());
+//
+//        List<TimetableResponseDTO> response = timetable.stream()
+//                .map(entry -> TimetableResponseDTO.builder()
+//                        .teacherId(entry.getTeacher().getId())
+//                        .teacherName(entry.getTeacher().getFirstName() + " " + entry.getTeacher().getLastName())
+//                        .isTeacherPresent(!absentTeacherIds.contains(entry.getTeacher().getId()))
+//
+//                        .subjectId(entry.getSubject().getSubjectId())
+//                        .subjectName(entry.getSubject().getTitle())
+//
+//                        .classId(entry.getSchoolClass().getClassId())
+//                        .className(entry.getSchoolClass().getClassName())
+//                        .classSection(entry.getSchoolClass().getSection())
+//
+//                        .dayOfWeek(entry.getDayOfWeek())
+//                        .period(entry.getPeriod())
+//                        .timeSlot(entry.getTimeSlot())
+//                        .build())
+//                .collect(Collectors.toList());
+//
+//        return ResponseEntity.ok(response);
+//    }
 }

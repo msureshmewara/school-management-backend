@@ -16,6 +16,7 @@ public class SubjectRequestDTO {
     private Integer totalInternalMarks;
     private Integer passingInternalMarks;
     private Integer obtainedInternalMarks;
+    private Long schoolId;
 
     private List<Long> classIds; // IDs of classes the subject belongs to
 }

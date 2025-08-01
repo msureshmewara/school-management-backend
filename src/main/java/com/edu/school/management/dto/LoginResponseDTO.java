@@ -24,4 +24,5 @@ public class LoginResponseDTO {
     private String status;
     private String role;  // e.g. "Admin", "Teacher"
     private String dob;   // formatted as dd/MM/yyyy
+    private Long schoolId;
 }

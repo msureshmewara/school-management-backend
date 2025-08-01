@@ -20,12 +20,13 @@ public class SubjectEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long subjectId;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String title;
 
     private Integer totalTheoryMarks;
     private Integer passingTheoryMarks;
     private Integer obtainedTheoryMarks;
+    private Long schoolId;
 
     private Boolean hasInternal; // true if internal exists
 

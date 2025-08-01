@@ -33,6 +33,9 @@ public class TeacherAttendanceEntity {
 
     @Column(nullable = false)
     private LocalDate date;
+    
+    @Column(nullable = false)
+    private Long schoolId;
 
     @Column(nullable = false)
     private Boolean isPresent;

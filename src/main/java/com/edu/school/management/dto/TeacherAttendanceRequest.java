@@ -9,4 +9,5 @@ public class TeacherAttendanceRequest {
     private Long teacherId;
     private LocalDate date;
     private Boolean isPresent;
+    private Long schoolId;
 }

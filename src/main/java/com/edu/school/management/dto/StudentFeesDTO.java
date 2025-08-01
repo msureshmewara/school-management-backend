@@ -12,4 +12,5 @@ public class StudentFeesDTO {
     private String paymentMode;
     private Double paidAmount;
     private String status;
+    private String createdBy;
 }

@@ -13,6 +13,7 @@ import com.edu.school.management.repository.UserRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,11 @@ public class UserService {
     public List<UserEntity> getAllUsers() {
         return userRepository.findAll();
     }
+    
+    public List<UserEntity> getAllUsersBySchoolId(Long schoolId) {
+        return userRepository.findAllBySchoolId(schoolId);
+    }
+
     
     public List<UserEntity> getUsersByRoleId(Long roleId) {
         return userRepository.findByRoleRoleId(roleId);
@@ -102,6 +108,32 @@ public class UserService {
 	                        .orElse(List.of())) // ✅ Return empty list if no attendance today
 	                .build();
 	    });
+	}
+
+	public List<UserWithAttendanceDTO> getUsersWithAttendanceByRoleAndSchoolId(Long roleId, Long schoolId) {
+	    List<UserEntity> users = userRepository.findByRoleIdAndSchoolId(roleId, schoolId);
+
+	    return users.stream().map(user -> {
+	    	// Set attendance data
+	        List<AttendanceDTO> attendanceDTOs = user.getAttendance().stream()
+	            .map(att -> AttendanceDTO.builder()
+	                .date(att.getDate())
+	                .isPresent(att.getIsPresent())
+	                .build())
+	            .collect(Collectors.toList());
+	    	UserWithAttendanceDTO dto = UserWithAttendanceDTO.builder()
+	    		    .id(user.getId())
+	    		    .firstName(user.getFirstName())
+	    		    .lastName(user.getLastName())
+	    		    .contactNumber(user.getContactNumber())
+	    		    .dob(user.getDOB())
+	    		    .schoolId(user.getSchoolId())
+	    		    .attendance(attendanceDTOs)
+	    		    .build();
+	        
+
+	        return dto;
+	    }).collect(Collectors.toList());
 	}
 
 

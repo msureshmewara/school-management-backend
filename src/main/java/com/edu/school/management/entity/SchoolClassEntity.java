@@ -12,7 +12,13 @@ import java.util.List;
 
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
-@Table(name = "school_classes")
+@Table(
+    name = "school_classes",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_class_school_section",
+        columnNames = {"class_name", "section", "school_id"}
+    )
+)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,19 +30,20 @@ public class SchoolClassEntity {
     @Column(name = "class_id")
     private Long classId;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "class_name", nullable = false)
     private String className;
 
     @Column(nullable = false)
     private String section;
 
+    @Column(name = "school_id", nullable = false)
+    private Long schoolId;
+
     @OneToMany(mappedBy = "schoolClass", cascade = CascadeType.ALL)
-    @JsonIgnore // hide the back-reference to students
+    @JsonIgnore
     private List<StudentEntity> students = new ArrayList<>();
 
     @ManyToMany(mappedBy = "classes")
     @JsonIgnore
     private List<SubjectEntity> subjects = new ArrayList<>();
-
-
 }

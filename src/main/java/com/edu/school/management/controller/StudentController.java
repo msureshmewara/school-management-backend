@@ -3,6 +3,7 @@ package com.edu.school.management.controller;
 import com.edu.school.management.dto.StudentFeeResponse;
 import com.edu.school.management.dto.StudentFullResponseDTO;
 import com.edu.school.management.dto.StudentLoginResponseDTO;
+import com.edu.school.management.dto.StudentRequestDTO;
 import com.edu.school.management.dto.StudentSummaryDTO;
 import com.edu.school.management.entity.StudentEntity;
 import com.edu.school.management.exceptions.InvalidCredentialsException;
@@ -26,14 +27,15 @@ public class StudentController {
     private final StudentService studentService;
 
     @PostMapping("/createStudent")
-    public ResponseEntity<StudentEntity> createStudent(@Valid @RequestBody StudentEntity user) {
-        return ResponseEntity.ok(studentService.createUser(user));
+    public ResponseEntity<StudentEntity> createStudent(@Valid @RequestBody StudentRequestDTO user) {
+        return ResponseEntity.ok(studentService.createStudent(user));
     }
 
     @GetMapping("/getAllStudents")
-    public ResponseEntity<List<StudentEntity>> getAllStudents() {
-        return ResponseEntity.ok(studentService.getAllStudents());
+    public ResponseEntity<List<StudentEntity>> getAllStudents(@RequestParam Long schoolId) {
+        return ResponseEntity.ok(studentService.getAllStudentsBySchoolId(schoolId));
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<StudentLoginResponseDTO> loginUser(@RequestBody StudentEntity user) {

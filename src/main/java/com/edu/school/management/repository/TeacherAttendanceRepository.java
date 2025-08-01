@@ -2,8 +2,6 @@ package com.edu.school.management.repository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -15,5 +13,13 @@ public interface TeacherAttendanceRepository extends JpaRepository<TeacherAttend
     long countByDateAndIsPresentFalse(LocalDate date);
     @Query("SELECT ta.teacher.id FROM TeacherAttendanceEntity ta WHERE ta.date = :date AND ta.isPresent = false")
     List<Long> findAbsentTeacherIdsByDate(LocalDate date);
+    
+    long countByDateAndIsPresentFalseAndSchoolId(LocalDate date, Long schoolId);
+    @Query("SELECT ta.teacher.id FROM TeacherAttendanceEntity ta WHERE ta.date = :date AND ta.isPresent = false AND ta.schoolId = :schoolId")
+    List<Long> findAbsentTeacherIdsByDateAndSchoolId(LocalDate date, Long schoolId);
+
+    
+    List<TeacherAttendanceEntity> findByDateAndSchoolId(LocalDate date, Long schoolId);
+
 
 }

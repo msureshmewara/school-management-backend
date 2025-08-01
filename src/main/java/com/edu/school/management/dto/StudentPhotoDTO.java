@@ -8,4 +8,5 @@ public class StudentPhotoDTO {
     private String fatherPhoto;
     private String motherPhoto;
     private String guardianPhoto;
+    private String createdBy;
 }

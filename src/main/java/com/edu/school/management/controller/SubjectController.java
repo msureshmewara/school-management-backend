@@ -30,8 +30,20 @@ public class SubjectController {
         return subjectService.getSubjectsByClassId(classId);
     }
     
+    @GetMapping("/by-school/{schoolId}/class/{classId}")
+    public List<SubjectEntity> getSubjectsBySchoolAndClass(
+            @PathVariable Long schoolId,
+            @PathVariable Long classId) {
+        return subjectService.getSubjectsBySchoolAndClass(schoolId, classId);
+    }
+    
     @GetMapping("/all")
     public List<SubjectEntity> getAllSubjects() {
         return subjectService.getAllSubjects();
+    }
+    
+    @GetMapping("/schoolAllSubject/{schoolId}")
+    public List<SubjectEntity> getAllSubjectsBySchoolId(@PathVariable Long schoolId) {
+        return subjectService.getAllSubjectsBySchoolId(schoolId);
     }
 }

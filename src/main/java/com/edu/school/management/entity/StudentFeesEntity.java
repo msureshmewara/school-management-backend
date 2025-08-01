@@ -33,6 +33,7 @@ public class StudentFeesEntity {
     private String receivedBy;
     private Double paidAmount;
     private String status;
+    private Long schoolId;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

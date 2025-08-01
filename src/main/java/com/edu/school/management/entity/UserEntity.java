@@ -55,6 +55,9 @@ public class UserEntity {
     @Column(nullable = false)
     private String gender; 
     
+    @Column(nullable = false)
+    private Long schoolId;
+    
     @NotBlank(message = "First name is required")
     @Column(nullable = false)
     private String firstName;
@@ -105,6 +108,10 @@ public class UserEntity {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+ 
+
+    
+    
 
     @PrePersist
     protected void onCreate() {
@@ -118,4 +125,7 @@ public class UserEntity {
     }
     @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL)
     private List<TeacherAttendanceEntity> attendance;
+    
+    
+   
 }

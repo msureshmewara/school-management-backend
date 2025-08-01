@@ -74,6 +74,7 @@ public class TeacherAttendanceController {
                         .teacher(teacher)
                         .date(attendanceDate)
                         .isPresent(req.getIsPresent())
+                        .schoolId(req.getSchoolId())
                         .build();
             }
         }).toList();
