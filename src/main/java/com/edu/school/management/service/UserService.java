@@ -80,6 +80,9 @@ public class UserService {
 //	                .state(user.getState())
 //	                .country(user.getCountry())
 //	                .status(user.getStatus())
+	                .experience(user.getExperience())
+	                .email(user.getEmail())
+	                .qualification(user.getQualification())
 	                .attendance(attendance)
 	                .build();
 	    }).toList();
@@ -103,6 +106,9 @@ public class UserService {
 	                .firstName(user.getFirstName())
 	                .lastName(user.getLastName())
 	                .contactNumber(user.getContactNumber())
+	                .experience(user.getExperience())
+	                .email(user.getEmail())
+	                .qualification(user.getQualification())
 	                .attendance(todayAttendance
 	                        .map(List::of)
 	                        .orElse(List.of())) // ✅ Return empty list if no attendance today

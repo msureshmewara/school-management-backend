@@ -38,9 +38,9 @@ public class SchoolClassController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteClass(@PathVariable Long id) {
-        schoolClassService.deleteClass(id);
+    @DeleteMapping("deleteClass/{id}")
+    public ResponseEntity<Void> deleteClass(@PathVariable Long classId) {
+    	schoolClassService.deleteClass(classId);
         return ResponseEntity.noContent().build();
     }
     

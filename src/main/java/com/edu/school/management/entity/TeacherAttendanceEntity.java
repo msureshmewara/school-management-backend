@@ -39,4 +39,12 @@ public class TeacherAttendanceEntity {
 
     @Column(nullable = false)
     private Boolean isPresent;
+    
+    
+    //for demo
+    @Column(nullable = false)
+    private String email;
+
+    private String qualification;
+    private String experience;
 }

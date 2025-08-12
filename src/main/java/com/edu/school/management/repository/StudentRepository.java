@@ -42,8 +42,6 @@ public interface StudentRepository extends JpaRepository<StudentEntity, Long> {
     @Query("SELECT s.studentPin FROM StudentEntity s WHERE s.school.id = :schoolId")
     List<Long> findIdsBySchoolId(@Param("schoolId") Long schoolId);
 
-
-
     List<StudentEntity> findAllBySchoolId(Long schoolId);
 
     @Query("SELECT s FROM StudentEntity s WHERE s.school.id = :schoolId AND FUNCTION('MONTH', s.dOB) = :month AND FUNCTION('DAY', s.dOB) = :day")
@@ -51,8 +49,8 @@ public interface StudentRepository extends JpaRepository<StudentEntity, Long> {
 
     @Query("SELECT SUM(s.totalFees - s.feesDiscount) FROM StudentEntity s WHERE s.school.id = :schoolId")
     Double sumTotalFeesMinusDiscountBySchoolId(@Param("schoolId") Long schoolId);
-    
-    @Query("SELECT s FROM SubjectEntity s JOIN s.classes c WHERE s.schoolId = :schoolId AND c.classId = :classId")
-    List<StudentEntity> findBySchoolClass_ClassIdAndSchoolId(Long classId, Long schoolId);
 
+    // ✅ FIXED QUERY — now selects StudentEntity, not SubjectEntity
+    @Query("SELECT s FROM StudentEntity s WHERE s.schoolClass.classId = :classId AND s.school.id = :schoolId")
+    List<StudentEntity> findBySchoolClass_ClassIdAndSchoolId(@Param("classId") Long classId, @Param("schoolId") Long schoolId);
 }

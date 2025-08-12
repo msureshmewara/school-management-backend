@@ -3,6 +3,7 @@ package com.edu.school.management.dto;
 import java.time.LocalDate;
 import java.util.List;
 
+import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Data;
 
@@ -16,4 +17,11 @@ public class UserWithAttendanceDTO {
 	    private LocalDate dob;
 	    private Long schoolId;
 	    private List<AttendanceDTO> attendance;
+	    
+	    //Test
+	    @Column(nullable = false)
+	    private String email;
+
+	    private String qualification;
+	    private String experience;
 }

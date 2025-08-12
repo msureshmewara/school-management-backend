@@ -5,16 +5,15 @@ import com.edu.school.management.dto.SchoolClassDTO;
 import com.edu.school.management.dto.StudentSummDTO;
 import com.edu.school.management.dto.SubjectDTO;
 import com.edu.school.management.entity.SchoolClassEntity;
-import com.edu.school.management.entity.StudentEntity;
-import com.edu.school.management.entity.SubjectEntity;
 import com.edu.school.management.repository.SchoolClassRepository;
 import com.edu.school.management.repository.StudentRepository;
 import com.edu.school.management.repository.SubjectRepository;
+import com.edu.school.management.repository.TimetableRepository;
 
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -24,9 +23,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class SchoolClassService {
 
-	private final SchoolClassRepository classRepo;
+    private final SchoolClassRepository classRepo;
     private final StudentRepository studentRepo;
     private final SubjectRepository subjectRepo;
+    private final TimetableRepository timeTableRepo;
 
     public SchoolClassEntity createClass(SchoolClassEntity schoolClass) {
         return classRepo.save(schoolClass);
@@ -40,49 +40,57 @@ public class SchoolClassService {
         return classRepo.findById(id);
     }
 
-    public void deleteClass(Long id) {
-    	classRepo.deleteById(id);
+    @Transactional
+    public void deleteClass(Long classId) {
+        var cls = classRepo.findById(classId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found"));
+
+        // Step 1: Delete timetables referencing this class
+        timeTableRepo.deleteByClassId(classId);
+
+        // Step 2: Delete many-to-many links (class_subjects) without removing subjects themselves
+        subjectRepo.deleteClassSubjectLinksByClassId(classId);
+
+        // Step 3: Finally delete the class
+        classRepo.delete(cls);
     }
-    
-   public ClassDetailsDTO getClassDetails(Long classId, Long schoolId) {
-    var cls = classRepo.findByClassIdAndSchoolId(classId, schoolId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found in this school"));
 
-    List<StudentSummDTO> students = studentRepo.findBySchoolClass_ClassIdAndSchoolId(classId, schoolId)
-        .stream()
-        .map(s -> new StudentSummDTO(
-            s.getStudentPin(),
-            s.getUsername(),
-            s.getFirstName(),
-            s.getLastName(),
-            s.getRollNumber()
-        ))
-        .toList();
+    public ClassDetailsDTO getClassDetails(Long classId, Long schoolId) {
+        var cls = classRepo.findByClassIdAndSchoolId(classId, schoolId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found in this school"));
 
-    List<SubjectDTO> subjects = subjectRepo.findAllByClassIdAndSchoolId(classId, schoolId)
-        .stream()
-        .map(s -> new SubjectDTO(
-            s.getSubjectId(), 
-            s.getTitle(), 
-            s.getTotalTheoryMarks(), 
-            s.getPassingTheoryMarks(),
-            s.getObtainedTheoryMarks(),
-            s.getHasInternal(),
-            s.getTotalInternalMarks(), 
-            s.getPassingInternalMarks(),
-            s.getObtainedInternalMarks()
-        ))
-        .toList();
+        List<StudentSummDTO> students = studentRepo.findBySchoolClass_ClassIdAndSchoolId(classId, schoolId)
+            .stream()
+            .map(s -> new StudentSummDTO(
+                s.getStudentPin(),
+                s.getUsername(),
+                s.getFirstName(),
+                s.getLastName(),
+                s.getRollNumber()
+            ))
+            .toList();
 
-    SchoolClassDTO classDto = new SchoolClassDTO(cls.getClassId(), cls.getClassName(), cls.getSection());
+        List<SubjectDTO> subjects = subjectRepo.findAllByClassIdAndSchoolId(classId, schoolId)
+            .stream()
+            .map(s -> new SubjectDTO(
+                s.getSubjectId(),
+                s.getTitle(),
+                s.getTotalTheoryMarks(),
+                s.getPassingTheoryMarks(),
+                s.getObtainedTheoryMarks(),
+                s.getHasInternal(),
+                s.getTotalInternalMarks(),
+                s.getPassingInternalMarks(),
+                s.getObtainedInternalMarks()
+            ))
+            .toList();
 
-    return new ClassDetailsDTO(classDto, students, subjects);
-}
+        SchoolClassDTO classDto = new SchoolClassDTO(cls.getClassId(), cls.getClassName(), cls.getSection());
 
-    
+        return new ClassDetailsDTO(classDto, students, subjects);
+    }
+
     public List<SchoolClassEntity> getAllClassesBySchoolId(Long schoolId) {
         return classRepo.findBySchoolId(schoolId);
     }
-
-
 }

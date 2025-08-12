@@ -108,6 +108,14 @@ public class UserEntity {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    
+    
+    //Test
+    @Column(nullable = false)
+    private String email;
+
+    private String qualification;
+    private String experience;
  
 
     
